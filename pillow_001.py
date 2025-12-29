@@ -31,6 +31,8 @@ def main():
 
     # display the red channel
     r, g, b = img.split()
+    print(f"r.getpixel((0,0))={r.getpixel((0,0))}")
+    r.show("red in greyscale")
     blank = PIL.Image.new('L', size, 0)
     img_red = PIL.Image.merge("RGB", (r, blank, blank))
     print(img_red.getpixel((0,0)))

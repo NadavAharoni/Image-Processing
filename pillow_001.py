@@ -20,7 +20,7 @@ def main():
     
     # get pixel values through the getpixel function
     pixel = img.getpixel((0,0))
-    print(pixel)
+    print(f"getpixel((0,0)={pixel}")
 
     middle = size[0]//2, size[1]//2
     print( img.getpixel(middle) )

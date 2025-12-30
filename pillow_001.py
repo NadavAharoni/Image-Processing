@@ -1,6 +1,6 @@
 import sys
 import PIL.Image # Image is a module, not a class
-# from PIL import Image
+import PIL.ImageOps
 
 def main():
     if len(sys.argv) < 2:
@@ -9,6 +9,10 @@ def main():
 
     file_name = sys.argv[1]
     img = PIL.Image.open(file_name)
+
+    # Apply rotation based on EXIF data
+    img = PIL.ImageOps.exif_transpose(img)
+
     img.show("original image")
 
     size = img.size

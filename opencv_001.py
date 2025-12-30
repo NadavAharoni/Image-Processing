@@ -12,14 +12,13 @@ def main():
         print(f"failed to read image from {file_name}")
         exit(-2)
             
-    print((type(img)))
+    print(f"type(img)={type(img)}")
     print(f"img.ndim={img.ndim}, img.shape={img.shape}, img.dtype={img.dtype}")
     print(f"img[0,0]={img[0,0]}")
 
     cv2.imshow(f"{file_name}", img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     main()

@@ -9,9 +9,21 @@ def main():
 
     filename = sys.argv[1]
 
-    # PIL with ImageChops
     img = Image.open(filename)
 
+    # PIL + numpy
+    t0 = time.time()
+    arr = np.array(img)
+    arr += 50
+    print("PIL + NumPy:", time.time() - t0, "sec")
+
+    t0 = time.time()
+    # cv2.add
+    arr = np.array(img)
+    cv2.add(arr, 50)
+    print("PIL + cv2.add:", time.time() - t0, "sec")
+
+    # PIL with ImageChops
     t0 = time.time()
     # Create a second image of the same size, filled with the constant value
     constant_img = Image.new(img.mode, img.size, color=(50, 50, 50))
@@ -20,13 +32,6 @@ def main():
     # Pillow's add function handles overflow by wrapping around
     new_img = ImageChops.add(img, constant_img)
     print("PIL + ImageChops:", time.time() - t0, "sec")
-
-    # PIL + numpy
-    img = Image.open(filename)
-    t0 = time.time()
-    arr = np.array(img)
-    arr += 50
-    print("PIL + NumPy:", time.time() - t0, "sec")
 
     # ==
     img = cv2.imread(filename, cv2.IMREAD_COLOR)

@@ -20,7 +20,7 @@ def main():
     t0 = time.time()
     # cv2.add
     arr = np.array(img)
-    cv2.add(arr, 50)
+    cv2.add(arr, 50) # type: ignore
     print("PIL + cv2.add:", time.time() - t0, "sec")
 
     # PIL with ImageChops
@@ -41,7 +41,7 @@ def main():
 
     t0 = time.time()
     # cv2.add
-    cv2.add(img, 50)
+    cv2.add(img, 50) # type: ignore
     print("cv2.add:", time.time() - t0, "sec")
 
     # numpy.add

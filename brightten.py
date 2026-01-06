@@ -37,7 +37,7 @@ def main():
     
     brightened_img = brighten(img, brightness_change, "cv2")
     file, ext = os.path.splitext(file_name)
-    cv2.imwrite(f'{file}_brightened_cv2_{brightness_change}.{ext}', brightened_img)
+    cv2.imwrite(f'{file}_brightened_cv2_{brightness_change}{ext}', brightened_img)
 
 if __name__ == "__main__":
     main()

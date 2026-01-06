@@ -33,7 +33,7 @@ def main():
 
     # 7. Save or display the result
     file, ext = os.path.splitext(file_name)
-    cv2.imwrite(f'{file}_equalized_cv2.{ext}', result_img)
+    cv2.imwrite(f'{file}_equalized_cv2{ext}', result_img)
     
     # cv2.imshow('Equalized Image', result_img)
     # cv2.waitKey(0)

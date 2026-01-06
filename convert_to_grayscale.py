@@ -23,7 +23,7 @@ def main():
     # 4. Save the image to disk
     file, ext = os.path.splitext(args.input_file)
     print(f"file={file}, ext={ext}")
-    output_filename = f'{file}_grayscale_cv2.{ext}'
+    output_filename = f'{file}_grayscale_cv2{ext}'
     success = cv2.imwrite(output_filename, gray_image)
 
     if success:

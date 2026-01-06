@@ -27,7 +27,7 @@ def main():
     # Save the new image
     file, ext = os.path.splitext(filename)
     brightness_str = str(brightness_factor).replace('.','_')
-    result_img.save(f'{file}_brightness_{brightness_str}.{ext}')
+    result_img.save(f'{file}_brightness_{brightness_str}{ext}')
 
     # Optional: Display the new image
     # bright_img.show()

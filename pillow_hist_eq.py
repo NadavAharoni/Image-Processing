@@ -30,7 +30,7 @@ def main():
 
     # 7. Save or display the result
     file, ext = os.path.splitext(filename)
-    result_img.save(f'{file}_equalized_pil.{ext}')
+    result_img.save(f'{file}_equalized_pil{ext}')
     # result_img.show()
 
 if __name__ == "__main__":

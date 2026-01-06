@@ -25,7 +25,7 @@ def calculate_and_display_histogram(image_path):
         colors = ('b', 'g', 'r')
         plt.figure(figsize=(10, 5))
         plt.subplot(1, 2, 1)
-        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)) # Display original image
+        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), vmin=0, vmax=255) # Display original image
         plt.title('Original Image')
         plt.axis('off')
 
@@ -49,7 +49,11 @@ def calculate_and_display_histogram(image_path):
         plt.axis('off')
 
         plt.subplot(1, 2, 2)
-        plt.plot(hist, color='black')
+        x = np.arange(256)
+        h_flat = hist.flatten()
+        # Alternating light/dark gray colors for visibility and a thin black border
+        bar_colors = ['#bbbbbb' if i % 2 == 0 else '#666666' for i in range(256)]
+        plt.bar(x, h_flat, width=1.0, color=bar_colors, edgecolor='black', linewidth=0.3)
         plt.xlim([0, 256])
         plt.title('Grayscale Histogram')
         plt.xlabel('Pixel Value')

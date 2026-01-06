@@ -18,12 +18,12 @@ def main():
     axes[0,0].axis('off')
     
     brightened_image_np = brightten.brighten(gradient_image, 50, "np")
-    axes[1,0].imshow(brightened_image_np, cmap='gray')
+    axes[1,0].imshow(brightened_image_np, cmap='gray', vmin=0, vmax=255)
     axes[1,0].set_title('Brightened (np)')
     axes[1,0].axis('off')
 
     brightened_image_cv2 = brightten.brighten(gradient_image, 50, "cv2")
-    axes[0,1].imshow(brightened_image_cv2, cmap='gray')
+    axes[0,1].imshow(brightened_image_cv2, cmap='gray', vmin=0, vmax=255)
     axes[0,1].set_title('Brightened (cv2)')
     axes[0,1].axis('off')
 

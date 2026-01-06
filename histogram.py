@@ -41,23 +41,24 @@ def calculate_and_display_histogram(image_path):
     else:
         # Grayscale image: calculate single histogram
         hist = cv2.calcHist([img], [0], None, [256], [0, 256])
+        print(f"hist.shape={hist.shape}")
+        print(hist[100:110,:])
 
-        plt.figure(figsize=(10, 5))
-        plt.subplot(1, 2, 1)
-        plt.imshow(img, cmap='gray', vmin=0, vmax=255) # Display grayscale image
-        plt.title('Original Grayscale Image')
-        plt.axis('off')
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5),
+                                gridspec_kw={'width_ratios': [1, 2]})
+        axs[0].imshow(img, cmap='gray', vmin=0, vmax=255)
+        axs[0].set_title('Original Grayscale Image')
+        axs[0].axis('off')
 
-        plt.subplot(1, 2, 2)
         x = np.arange(256)
         h_flat = hist.flatten()
-        # Alternating light/dark gray colors for visibility and a thin black border
         bar_colors = ['#bbbbbb' if i % 2 == 0 else '#666666' for i in range(256)]
-        plt.bar(x, h_flat, width=1.0, color=bar_colors, edgecolor='black', linewidth=0.3)
-        plt.xlim([0, 256])
-        plt.title('Grayscale Histogram')
-        plt.xlabel('Pixel Value')
-        plt.ylabel('Frequency')
+        axs[1].bar(x, h_flat, width=1.0, color=bar_colors, edgecolor='black', linewidth=0.3)
+        axs[1].set_xlim([0, 256])
+        axs[1].set_title('Grayscale Histogram')
+        axs[1].set_xlabel('Pixel Value')
+        axs[1].set_ylabel('Frequency')
+        plt.tight_layout()
 
     # 3. Display the plots
     plt.tight_layout()

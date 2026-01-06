@@ -86,7 +86,7 @@ if __name__ == "__main__":
     print(circle_image.shape)
     cv2.imwrite(f'images\\low_contrast_circle.png', circle_image)
 
-    fig, axes = plt.subplots(2, 1)
+    fig, axes = plt.subplots(1, 2)
     axes[0].imshow(gradient_image, cmap='gray', vmin=0, vmax=255)
     axes[0].axis('off')
 

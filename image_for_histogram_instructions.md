@@ -30,3 +30,17 @@ For example, we can have c1=(50,20,30), c2=(55,40,35). In the example the histog
 But, if we first convert the color image to HSV, or YCbCr, perform histgram equalization just on the brightness and then go back to RGB, the results will look better.
 
 If you agree with this analysis please add code to create an example color image.
+
+# Step 3
+
+I already have a file in this directory "cdf.py" which reads an image, shows a histogram and the cdf.
+Please change it to perform equalization and display the image, the histogram, the CDF, the histogram and cdf after equalization, and then the resulting image.
+If the image is a color image, let's display each color in a separate row.
+In each row, display one channel (but in color, not greyscale), the histogram, CFD, equalized histogram and cdf and the resulting channel.
+Add a row also for the color image.
+If it's greyscale, create just one "row" in the plot.
+
+# suggestions
+
+- Add a side-by-side plot of original + equalized images and their histograms.
+- Add a short README and a small test saving expected files.

@@ -40,6 +40,11 @@ In each row, display one channel (but in color, not greyscale), the histogram, C
 Add a row also for the color image.
 If it's greyscale, create just one "row" in the plot.
 
+# Step 4
+Create sample code for my students that calculates histogram, then calculates the cdf, then creates a new image using the cdf mapping.
+Don't use cv2 functions, use pixelwise operations.
+Place it in a file called "equalization_pixelwise.py" (or propose a better name if can think of such)
+
 # suggestions
 
 - Add a side-by-side plot of original + equalized images and their histograms.

@@ -3,26 +3,35 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-def create_rects():
+def create_rects(height, width, type, bg, rect_list):
     """
+    Creates an image with size (height, width) and background color bg.
+    
     Parameters:
-    height, width, type, bg, rect_list
-
-    Creates an image with size (height, width)
-    and background color bg.
-    
-    The "type" argument determines if the image
-    is greyscale, RGB, etc.
-    
-    Then draws on the image rectangles according to
-    the spec in "rect_list".
-    "rect_list contains a list of dicts, each with the structure:
-    { 'rect':((r0,c0),(r1,c1)), 'color':c }
-    Where the value of 'rect' are the 
-    top-right and bottom-left corners of the rectanle,
-    and c is the color of the recatanlge.
+    - height, width: image dimensions
+    - type: image type determining if the image is grayscale, RGB, etc.
+    - bg: background color (int for grayscale, tuple for RGB)
+    - rect_list: list of dicts specifying rectangles to draw, each with structure:
+        {'rect': ((r0, c0), (r1, c1)), 'color': c}
+        where (r0, c0) is the top-left corner, (r1, c1) is the bottom-right corner,
+        and c is the color of the rectangle.
     """
-    pass
+    # Create image filled with background color
+    if type == 'grayscale' or type == 'gray':
+        img = np.full((height, width), fill_value=bg, dtype=np.uint8)
+    elif type == 'RGB' or type == 'rgb':
+        img = np.full((height, width, 3), fill_value=bg, dtype=np.uint8)
+    else:
+        raise ValueError(f"Unsupported image type: {type}")
+    
+    # Draw rectangles
+    for rect_spec in rect_list:
+        rect = rect_spec['rect']
+        color = rect_spec['color']
+        (r0, c0), (r1, c1) = rect
+        img[r0:r1, c0:c1] = color
+    
+    return img
 
 def create_gradient_image(height, width):
     img = np.zeros((height, width), dtype=np.uint8)

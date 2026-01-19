@@ -45,6 +45,29 @@ Create sample code for my students that calculates histogram, then calculates th
 Don't use cv2 functions, use pixelwise operations.
 Place it in a file called "equalization_pixelwise.py" (or propose a better name if can think of such)
 
+
+# Step 5
+I want to demostrate how image normalization, if done in RGB space,
+can ruin the colors.
+We will use the function create_rects in "create_test_images.py".
+We will create an image with width 400, height 300.
+Background color will be (120, 20, 20), and two rectangles (not overlapping, they should each cover about 1/8 of the image), with RGB colors (140, 21, 21) and (150, 22, 22).
+Now, if we will normalize each color separately, or even if we stretch the values around the mean by the same factor, the color, which is a shade of red, will become something different.
+Then, I want to show the students that if we first convert to HSV or YCrCb, the color will be preserved.
+
+So I would like a new python file, let's call it compare_normalize.py (you can suggest a better name).
+In this file we will call create_rects in "create_test_images.py", and create an image as specified above.
+Then please create code that "stretches" the values of the image in the following way:
+1. Normalize such that min goes to 0, max to 255 - in each channel separately.
+2. Multiply by a factor, let say of 5 around the mean - again each channel directly
+3. Histogram equaliztion - again each channel directly.
+4. Convert to HSV, then normalize just the brightness such that min goes to 0, max to 255, then convert back to RGB.
+5. Convert to HSV, multiply each pixel's distance to the mean by 5. then convert back to RGB.
+6. Convert to HSV, perform histogram equaliztion, then convert back to RGB.
+7,8,9. Repeat steps 4,5,6 with YCrCb.
+10. Display everything nicely with matplotlib. 
+
+
 # suggestions
 
 - Add a side-by-side plot of original + equalized images and their histograms.

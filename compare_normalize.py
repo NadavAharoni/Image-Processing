@@ -106,21 +106,20 @@ def main():
         {'rect': ((150, 250), (150 + rect_height, 250 + rect_width)), 'color': (150, 22, 22)}
     ]
     
-    img_bgr = create_rects(height, width, 'RGB', bg_color, rect_list)
-    img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB) if isinstance(img_bgr, np.ndarray) else img_bgr
+    img = create_rects(height, width, 'RGB', bg_color, rect_list)
     
     # Apply all transformations
     transformations = [
-        ("Original", img_rgb),
-        ("1. Normalize per channel\n(min→0, max→255)", normalize_per_channel(img_rgb)),
-        ("2. Stretch ×5 around mean\n(per channel)", stretch_around_mean_per_channel(img_rgb, factor=5)),
-        ("3. Histogram equalization\n(per channel)", equalize_per_channel(img_rgb)),
-        ("4. HSV normalize brightness", normalize_hsv_brightness(img_rgb)),
-        ("5. HSV stretch brightness ×5", stretch_hsv_brightness(img_rgb, factor=5)),
-        ("6. HSV histogram equalize", equalize_hsv_brightness(img_rgb)),
-        ("7. YCrCb normalize brightness", normalize_ycrcb_brightness(img_rgb)),
-        ("8. YCrCb stretch brightness ×5", stretch_ycrcb_brightness(img_rgb, factor=5)),
-        ("9. YCrCb histogram equalize", equalize_ycrcb_brightness(img_rgb)),
+        ("Original", img),
+        ("1. Normalize per channel\n(min→0, max→255)", normalize_per_channel(img)),
+        ("2. Stretch ×5 around mean\n(per channel)", stretch_around_mean_per_channel(img, factor=5)),
+        ("3. Histogram equalization\n(per channel)", equalize_per_channel(img)),
+        ("4. HSV normalize brightness", normalize_hsv_brightness(img)),
+        ("5. HSV stretch brightness ×5", stretch_hsv_brightness(img, factor=5)),
+        ("6. HSV histogram equalize", equalize_hsv_brightness(img)),
+        ("7. YCrCb normalize brightness", normalize_ycrcb_brightness(img)),
+        ("8. YCrCb stretch brightness ×5", stretch_ycrcb_brightness(img, factor=5)),
+        ("9. YCrCb histogram equalize", equalize_ycrcb_brightness(img)),
     ]
     
     # Display results in a grid

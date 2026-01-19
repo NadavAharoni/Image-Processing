@@ -102,9 +102,9 @@ def main():
     
     # Two non-overlapping rectangles, each covering about 1/8 of image
     rect_list = [
-        {'rect': ((50, 50), (50 + rect_height, 50 + rect_width)), 'color': (135, 31, 22)},
+        {'rect': ((50, 50), (50 + rect_height, 50 + rect_width)), 'color': (135, 30, 22)},
         {'rect': ((150, 250), (150 + rect_height, 250 + rect_width)), 'color': (150, 20, 30)},
-        {'rect': ((110, 160), (110 + 30, 160 + 40)), 'color': (100, 10, 29)}
+        {'rect': ((110, 160), (110 + height // 6, 160 + width // 6)), 'color': (100, 10, 29)}
     ]
     
     img = create_rects(height, width, 'RGB', bg_color, rect_list)

@@ -109,35 +109,60 @@ def main():
     
     img = create_rects(height, width, 'RGB', bg_color, rect_list)
     
-    # Apply all transformations
-    transformations = [
-        ("Original", img),
-        ("1. Normalize per channel\n(min→0, max→255)", normalize_per_channel(img)),
-        ("2. Stretch ×5 around mean\n(per channel)", stretch_around_mean_per_channel(img, factor=5)),
-        ("3. Histogram equalization\n(per channel)", equalize_per_channel(img)),
-        ("4. HSV normalize brightness", normalize_hsv_brightness(img)),
-        ("5. HSV stretch brightness ×5", stretch_hsv_brightness(img, factor=5)),
-        ("6. HSV histogram equalize", equalize_hsv_brightness(img)),
-        ("7. YCrCb normalize brightness", normalize_ycrcb_brightness(img)),
-        ("8. YCrCb stretch brightness ×5", stretch_ycrcb_brightness(img, factor=5)),
-        ("9. YCrCb histogram equalize", equalize_ycrcb_brightness(img)),
+    # Prepare transformations organized by method
+    per_channel_transforms = [
+        ("Normalize\n(min→0, max→255)", normalize_per_channel(img)),
+        ("Stretch ×5\naround mean", stretch_around_mean_per_channel(img, factor=5)),
+        ("Histogram\nequalization", equalize_per_channel(img)),
+    ]
+    
+    hsv_transforms = [
+        ("Normalize\nbrightness", normalize_hsv_brightness(img)),
+        ("Stretch brightness\n×5", stretch_hsv_brightness(img, factor=5)),
+        ("Histogram\nequalize", equalize_hsv_brightness(img)),
+    ]
+    
+    ycrcb_transforms = [
+        ("Normalize\nbrightness", normalize_ycrcb_brightness(img)),
+        ("Stretch brightness\n×5", stretch_ycrcb_brightness(img, factor=5)),
+        ("Histogram\nequalize", equalize_ycrcb_brightness(img)),
     ]
     
     # Display results in a grid
-    n_cols = 5
-    n_rows = 2
+    fig, axes = plt.subplots(4, 3, figsize=(8, 9))
     
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4, n_rows * 4))
-    axes = axes.flatten()
+    # Row 0: Original image (centered)
+    axes[0, 0].imshow(img)
+    axes[0, 0].set_title("Original Image", fontsize=12, fontweight='bold')
+    axes[0, 0].axis('off')
+    axes[0, 1].axis('off')
+    axes[0, 2].axis('off')
     
-    for idx, (title, img_result) in enumerate(transformations):
-        ax = axes[idx]
-        # Ensure image is in uint8 format
+    # Row 1: Per-channel transformations
+    for col, (title, img_result) in enumerate(per_channel_transforms):
+        ax = axes[1, col]
         img_display = np.clip(img_result, 0, 255).astype(np.uint8)
         ax.imshow(img_display)
-        ax.set_title(title, fontsize=10, fontweight='bold')
+        ax.set_title(f"Per-channel: {title}", fontsize=10, fontweight='bold')
         ax.axis('off')
     
+    # Row 2: HSV transformations
+    for col, (title, img_result) in enumerate(hsv_transforms):
+        ax = axes[2, col]
+        img_display = np.clip(img_result, 0, 255).astype(np.uint8)
+        ax.imshow(img_display)
+        ax.set_title(f"HSV: {title}", fontsize=10, fontweight='bold')
+        ax.axis('off')
+    
+    # Row 3: YCrCb transformations
+    for col, (title, img_result) in enumerate(ycrcb_transforms):
+        ax = axes[3, col]
+        img_display = np.clip(img_result, 0, 255).astype(np.uint8)
+        ax.imshow(img_display)
+        ax.set_title(f"YCrCb: {title}", fontsize=10, fontweight='bold')
+        ax.axis('off')
+    
+    plt.subplots_adjust(hspace=0.5, wspace=0.3)
     plt.tight_layout()
     plt.show()
 

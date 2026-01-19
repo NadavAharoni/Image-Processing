@@ -3,6 +3,20 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
+def create_rects():
+    """
+    Creates an image with size (height, width)
+    and background color bg.
+    Then draw on it rectangles according to the spec
+    in "rect_list".
+    "rect_list contains a list of dicts, each with the structure:
+    { 'rect':((r0,c0),(r1,c1)), 'color':c }
+    Where the value of 'rect' are the 
+    top-right and bottom-left corners of the rectanle,
+    and c is the color of the recatanlge.
+    """
+    pass
+
 def create_gradient_image(height, width):
     img = np.zeros((height, width), dtype=np.uint8)
 

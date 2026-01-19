@@ -5,10 +5,17 @@ import matplotlib.pyplot as plt
 
 def create_rects():
     """
+    Parameters:
+    height, width, type, bg, rect_list
+
     Creates an image with size (height, width)
     and background color bg.
-    Then draw on it rectangles according to the spec
-    in "rect_list".
+    
+    The "type" argument determines if the image
+    is greyscale, RGB, etc.
+    
+    Then draws on the image rectangles according to
+    the spec in "rect_list".
     "rect_list contains a list of dicts, each with the structure:
     { 'rect':((r0,c0),(r1,c1)), 'color':c }
     Where the value of 'rect' are the 

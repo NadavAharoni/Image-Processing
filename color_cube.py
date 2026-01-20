@@ -26,11 +26,13 @@ def draw_color_cube():
 
     # 4. Draw the "brightness" vector (from 0,0,0 to 1,1,1)
     # The first three args are start point; next three are direction vectors
-    ax.quiver(0, 0, 0, 1, 1, 1, 
-              color='black', 
-              linewidth=1, 
-              arrow_length_ratio=0.01, 
-              label='Luminance Vector')
+    draw_brightness_vector = True
+    if draw_brightness_vector:
+        ax.quiver(0, 0, 0, 1, 1, 1, 
+                color='black', 
+                linewidth=1.5, 
+                arrow_length_ratio=0.01, 
+                label='Luminance Vector')
 
     # Add example colors:
     example_colors = False

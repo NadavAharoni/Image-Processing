@@ -13,6 +13,7 @@ def draw_color_cube():
     # 2. Draw spheres at each corner colored by their RGB value
     for corner in corners:
         # The (x,y,z) coordinates are the RGB values [0.0 to 1.0]
+        print(f"corner={corner}")
         ax.scatter(corner[0], corner[1], corner[2], 
                    color=corner, s=200, edgecolors='black', alpha=1)
 
@@ -20,6 +21,7 @@ def draw_color_cube():
     for start, end in combinations(corners, 2):
         # Only connect corners that share an edge (distance of exactly 1)
         if np.sum(np.abs(np.array(start) - np.array(end))) == 1:
+            print(*zip(start, end))
             ax.plot3D(*zip(start, end), color="black", linestyle="--", linewidth=1)
 
     # 4. DRAW THE VECTOR (from 0,0,0 to 1,1,1)

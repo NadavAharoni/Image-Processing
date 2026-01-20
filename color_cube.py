@@ -70,6 +70,7 @@ def draw_color_cube():
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_zlim(0, 1)
+    # ax.margins(0.15)  # Add 15% margin to prevent clipping during rotation
     ax.set_box_aspect([1,1,1]) 
 
     plt.show()

@@ -38,7 +38,9 @@ def draw_color_cube():
         ax.quiver(0, 0, 0, 1, 1, 1, 
                 color='black', 
                 linewidth=1.5, 
-                arrow_length_ratio=0.01, 
+                arrow_length_ratio=0.03,
+                linestyle='dashed',
+                facecolor='none', 
                 label='Luminance Vector')
 
     # Add example colors:

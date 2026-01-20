@@ -18,11 +18,18 @@ def draw_color_cube():
                    color=corner, s=200, edgecolors='black', alpha=1)
 
     # 3. Draw dashed edges between adjacent corners
+    # Edges that connect the origin with the "main" colors are
+    # a bit thicker
     for start, end in combinations(corners, 2):
+        print(*zip(start, end)) # for debugging / verbosity
         # Only connect corners that share an edge (distance of exactly 1)
         if np.sum(np.abs(np.array(start) - np.array(end))) == 1:
-            print(*zip(start, end))
-            ax.plot3D(*zip(start, end), color="black", linestyle="--", linewidth=1)
+            if (0, 0, 0) in (start, end):
+                # Main RGB Axes: Solid and Bold
+                ax.plot3D(*zip(start, end), color="black", linestyle="-", linewidth=2)
+            else:
+                # Other edges: Dashed and Subtle
+                ax.plot3D(*zip(start, end), color="black", linestyle="--", linewidth=1, alpha=0.5)
 
     # 4. Draw the "brightness" vector (from 0,0,0 to 1,1,1)
     # The first three args are start point; next three are direction vectors

@@ -22,7 +22,15 @@ def draw_color_cube():
         if np.sum(np.abs(np.array(start) - np.array(end))) == 1:
             ax.plot3D(*zip(start, end), color="black", linestyle="--", linewidth=1)
 
-    # 4. Final plot adjustments
+    # 4. DRAW THE VECTOR (from 0,0,0 to 1,1,1)
+    # The first three args are start point; next three are direction vectors
+    ax.quiver(0, 0, 0, 1, 1, 1, 
+              color='black', 
+              linewidth=1, 
+              arrow_length_ratio=0.01, 
+              label='Luminance Vector')
+
+    # 5. Final plot adjustments
     ax.set_xlabel('Red')
     ax.set_ylabel('Green')
     ax.set_zlabel('Blue')

@@ -24,7 +24,7 @@ def draw_color_cube():
             print(*zip(start, end))
             ax.plot3D(*zip(start, end), color="black", linestyle="--", linewidth=1)
 
-    # 4. DRAW THE VECTOR (from 0,0,0 to 1,1,1)
+    # 4. Draw the "brightness" vector (from 0,0,0 to 1,1,1)
     # The first three args are start point; next three are direction vectors
     ax.quiver(0, 0, 0, 1, 1, 1, 
               color='black', 

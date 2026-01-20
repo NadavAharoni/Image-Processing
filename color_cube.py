@@ -32,6 +32,22 @@ def draw_color_cube():
               arrow_length_ratio=0.01, 
               label='Luminance Vector')
 
+    # Add example colors:
+    example_colors = False
+    if example_colors:
+        origin = (0,0,0)
+        example_colors = [
+            [200, 100, 50],
+            [200, 150, 20],
+            [200, 200, 80],
+            [200,  50, 100]
+        ]
+        for c in example_colors:
+            color = np.array(c) / 255.0
+            ax.plot3D(*zip(origin, color), color="black", linestyle="--", linewidth=1)
+            ax.scatter(color[0], color[1], color[2],
+                    color=color, s=200, edgecolors='black', alpha=1)
+
     # 5. Final plot adjustments
     ax.set_xlabel('Red')
     ax.set_ylabel('Green')

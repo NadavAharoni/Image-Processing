@@ -4,23 +4,58 @@ import numpy as np
 import cv2
 
 def brighten(img, b, func):
-    """
-    Brighten an image by adding a value to all pixels.
-    
+    """Brighten an image by adding a value to all pixels.
+
+    This function is intended for educational purposes to demonstrate
+    the difference between `np.add` (which will overflow/wrap for
+    uint8 pixel arrays) and `cv2.add` (which saturates/clamps values).
+
     Args:
-        img: Grayscale image
-        b: Integer value to add to all pixels
-        func: String - "np" for numpy.add or "cv2" for cv2.add
-    
+        img: numpy array image (grayscale, BGR, or BGRA)
+        b: integer value to add to all pixels
+        func: "np" to use `np.add` (demonstrates overflow) or "cv2" to use
+              `cv2.add` (saturating behavior)
+
     Returns:
-        Brightened image
+        Brightened image with same shape and dtype as input.
     """
-    if func == "np":
-        return np.add(img, b)
-    elif func == "cv2":
-        return cv2.add(img, b)
-    else:
-        raise ValueError("func must be 'np' or 'cv2'")
+    # ensure brightness is integer
+    b = int(b)
+
+    if img.ndim == 2:
+        # single channel
+        if func == "np":
+            res = np.add(img, b)
+        elif func == "cv2":
+            res = cv2.add(img, b)
+        else:
+            raise ValueError("func must be 'np' or 'cv2'")
+        return res
+
+    # multi-channel: handle alpha separately if present
+    if img.ndim == 3:
+        channels = img.shape[2]
+        if channels == 4:
+            bgr = img[:, :, :3]
+            alpha = img[:, :, 3]
+            if func == "np":
+                bgr_res = np.add(bgr, b)
+            elif func == "cv2":
+                bgr_res = cv2.add(bgr, b)
+            else:
+                raise ValueError("func must be 'np' or 'cv2'")
+            return cv2.merge((bgr_res[:, :, 0], bgr_res[:, :, 1], bgr_res[:, :, 2], alpha))
+        else:
+            # 3-channel (BGR) or other multi-channel
+            if func == "np":
+                res = np.add(img, b)
+            elif func == "cv2":
+                res = cv2.add(img, b)
+            else:
+                raise ValueError("func must be 'np' or 'cv2'")
+            return res
+
+    raise ValueError("Unsupported image shape for brighten()")
     
 
 def main():

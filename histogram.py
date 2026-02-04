@@ -34,10 +34,15 @@ def calculate_and_display_histogram(image_path):
             hist = cv2.calcHist([img], [i], None, [256], [0, 256])
             plt.plot(hist, color=color)
             plt.xlim([0, 256])
+        # set x-axis labels every 25 for consistency with grayscale histogram
+        ax2 = plt.gca()
+        xticks = np.arange(0, 256, 25)
+        ax2.set_xticks(xticks)
+        ax2.set_xticklabels([str(t) for t in xticks])
+        
         plt.title('Color Histogram')
         plt.xlabel('Pixel Value')
         plt.ylabel('Frequency')
-        
     else:
         # Grayscale image: calculate single histogram
         hist = cv2.calcHist([img], [0], None, [256], [0, 256])
@@ -50,10 +55,15 @@ def calculate_and_display_histogram(image_path):
         axs[0].set_title('Original Grayscale Image')
         axs[0].axis('off')
 
+
         x = np.arange(256)
         h_flat = hist.flatten()
         bar_colors = ['#bbbbbb' if i % 2 == 0 else '#666666' for i in range(256)]
         axs[1].bar(x, h_flat, width=1.0, color=bar_colors, edgecolor='black', linewidth=0.3)
+        # set x-axis labels
+        xticks = np.arange(0, 256, 25)
+        axs[1].set_xticks(xticks)
+        axs[1].set_xticklabels([str(t) for t in xticks])
         axs[1].set_xlim([0, 256])
         axs[1].set_title('Grayscale Histogram')
         axs[1].set_xlabel('Pixel Value')

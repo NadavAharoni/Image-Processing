@@ -65,7 +65,7 @@ def main():
 
     file_name = sys.argv[1]
     brightness_change = float(sys.argv[2])
-    img = cv2.imread(file_name, cv2.IMREAD_COLOR)
+    img = cv2.imread(file_name, cv2.IMREAD_UNCHANGED)
     if img is None:
         print(f"failed to read image from {file_name}")
         exit(-2)

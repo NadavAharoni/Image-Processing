@@ -84,13 +84,7 @@ def main():
 
     # Example with a color image:
     calculate_and_display_histogram(file_name)
-
-    # Example with a grayscale image (if you have one):
-    # calculate_and_display_histogram('sample_gray_image.jpg')
     
 
-# --- Example Usage ---
-# Ensure you have an image named 'sample_image.jpg' in your directory
-# or replace 'sample_image.jpg' with the path to your image.
 if __name__ == '__main__':
     main()

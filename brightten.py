@@ -64,7 +64,11 @@ def main():
         exit(-1)
 
     file_name = sys.argv[1]
-    brightness_change = float(sys.argv[2])
+    try:
+        brightness_change = int(sys.argv[2])
+    except ValueError:
+        print(f"Error: brightness_change must be an integer, got '{sys.argv[2]}'")
+        exit(-3)
     img = cv2.imread(file_name, cv2.IMREAD_UNCHANGED)
     if img is None:
         print(f"failed to read image from {file_name}")

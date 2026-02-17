@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
@@ -105,32 +106,46 @@ def apply_transform(img, M, interpolation='nearest'):
 # Demo
 # -----------------------------
 
-img = cv2.imread('your_image.jpg', cv2.IMREAD_GRAYSCALE)
+def main(image_path):
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    if img is None:
+        print(f"Error: Could not load image from {image_path}")
+        return
+    
+    M1 = build_transform(scale=1.0, angle_deg=30, tx=0, ty=0)
+    M2 = build_transform(scale=1.0, angle_deg=30, tx=50, ty=0)
+    M3 = build_transform(scale=1.5, angle_deg=45, tx=30, ty=20)
+    
+    out1 = apply_transform(img, M1, 'nearest')
+    out2 = apply_transform(img, M2, 'bilinear')
+    out3 = apply_transform(img, M3, 'bilinear')
+    
+    plt.figure(figsize=(12,6))
+    
+    plt.subplot(1,4,1)
+    plt.imshow(img, cmap='gray')
+    plt.title("Original")
+    
+    plt.subplot(1,4,2)
+    plt.imshow(out1, cmap='gray')
+    plt.title("Rotate 30°")
+    
+    plt.subplot(1,4,3)
+    plt.imshow(out2, cmap='gray')
+    plt.title("Rotate + Translate")
+    
+    plt.subplot(1,4,4)
+    plt.imshow(out3, cmap='gray')
+    plt.title("Scale + Rotate + Translate")
+    
+    plt.show()
 
-M1 = build_transform(scale=1.0, angle_deg=30, tx=0, ty=0)
-M2 = build_transform(scale=1.0, angle_deg=30, tx=50, ty=0)
-M3 = build_transform(scale=1.5, angle_deg=45, tx=30, ty=20)
 
-out1 = apply_transform(img, M1, 'nearest')
-out2 = apply_transform(img, M2, 'bilinear')
-out3 = apply_transform(img, M3, 'bilinear')
-
-plt.figure(figsize=(12,6))
-
-plt.subplot(1,4,1)
-plt.imshow(img, cmap='gray')
-plt.title("Original")
-
-plt.subplot(1,4,2)
-plt.imshow(out1, cmap='gray')
-plt.title("Rotate 30°")
-
-plt.subplot(1,4,3)
-plt.imshow(out2, cmap='gray')
-plt.title("Rotate + Translate")
-
-plt.subplot(1,4,4)
-plt.imshow(out3, cmap='gray')
-plt.title("Scale + Rotate + Translate")
-
-plt.show()
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python transformations_01.py <image_path>")
+        sys.exit(1)
+    
+    image_path = sys.argv[1]
+    main(image_path)

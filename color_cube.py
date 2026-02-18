@@ -40,7 +40,8 @@ def draw_color_cube():
             [200, 100, 50],
             [200, 150, 20],
             [200, 200, 80],
-            [200,  50, 100]
+            [200,  50, 100],
+            [255, 128, 0] # orange
         ]
         for c in example_colors:
             color = np.array(c) / 255.0

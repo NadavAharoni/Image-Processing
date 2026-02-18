@@ -78,5 +78,9 @@ def main():
     file, ext = os.path.splitext(file_name)
     cv2.imwrite(f'{file}_brightened_cv2_{brightness_change}{ext}', brightened_img)
 
+    brightened_img = brighten(img, brightness_change, "np")
+    file, ext = os.path.splitext(file_name)
+    cv2.imwrite(f'{file}_brightened_np_{brightness_change}{ext}', brightened_img)
+
 if __name__ == "__main__":
     main()

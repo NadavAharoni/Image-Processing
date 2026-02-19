@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.widgets import Slider
 
 
 def create_grid(n=4, spacing=1.0):
@@ -8,7 +8,7 @@ def create_grid(n=4, spacing=1.0):
     y = np.linspace(0, (n - 1) * spacing, n)
     X, Y = np.meshgrid(x, y)
     ones = np.ones_like(X)
-    points = np.vstack([X.ravel(), Y.ravel(), ones.ravel()])  # homogeneous (3, N)
+    points = np.vstack([X.ravel(), Y.ravel(), ones.ravel()])
     return points
 
 
@@ -32,17 +32,13 @@ def rotation(theta):
     ])
 
 
-def scale(sx, sy):
+def scale(s):
     return np.array([
-        [sx, 0, 0],
-        [0, sy, 0],
+        [s, 0, 0],
+        [0, s, 0],
         [0, 0, 1]
     ])
 
-
-# -----------------------------
-# Main animation
-# -----------------------------
 
 def main():
     n = 4
@@ -53,34 +49,42 @@ def main():
     center_y = (n - 1) / 2
 
     fig, ax = plt.subplots()
+    plt.subplots_adjust(bottom=0.25)
+    fig.suptitle("Affine Transformation with Interactive Sliders")
+
     ax.set_aspect('equal')
-    ax.set_xlim(-2, 5)
-    ax.set_ylim(-2, 5)
+    ax.set_xlim(-3, 6)
+    ax.set_ylim(-3, 6)
     ax.grid(True)
 
     original_plot, = ax.plot(grid[0], grid[1], 'o')
-    transformed_plot, = ax.plot([], [], 'x')
+    transformed_plot, = ax.plot(grid[0], grid[1], 'x')
 
-    def update(frame):
-        theta = np.deg2rad(frame)
+    # Slider axes
+    ax_rot = plt.axes([0.15, 0.1, 0.7, 0.03])
+    ax_scale = plt.axes([0.15, 0.05, 0.7, 0.03])
 
-        # Build matrices individually
-        T1 = translation(-center_x, -center_y)   # move center to origin
-        R = rotation(theta)                      # rotate
-        S = scale(1.0, 1.0)                      # optional scaling (identity here)
-        T2 = translation(center_x, center_y)     # move back
+    rot_slider = Slider(ax_rot, 'Rotation (deg)', -180, 180, valinit=0)
+    scale_slider = Slider(ax_scale, 'Scale', 0.2, 2.0, valinit=1.0)
+    
+    def update(val):
+        theta = np.deg2rad(rot_slider.val)
+        s = scale_slider.val
 
-        # Combine: T2 * R * S * T1
+        T1 = translation(-center_x, -center_y)
+        R = rotation(theta)
+        S = scale(s)
+        T2 = translation(center_x, center_y)
+
         A = T2 @ R @ S @ T1
-
         transformed = A @ grid
 
         transformed_plot.set_data(transformed[0], transformed[1])
-        return transformed_plot,
+        fig.canvas.draw_idle()
 
-    anim = FuncAnimation(fig, update, frames=np.linspace(0, 360, 120), interval=50)
+    rot_slider.on_changed(update)
+    scale_slider.on_changed(update)
 
-    plt.title("Affine Rotation Around Grid Center")
     plt.show()
 
 

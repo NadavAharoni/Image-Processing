@@ -4,10 +4,10 @@ from matplotlib.widgets import Slider
 
 
 # -------------------------------------------------
-# Cubic convolution kernel (Catmull–Rom style)
+# Cubic convolution kernel
 # -------------------------------------------------
 
-def cubic_kernel(t, a=-0.5):
+def cubic_kernel(t, a):
     t = abs(t)
     if t <= 1:
         return (a + 2)*t**3 - (a + 3)*t**2 + 1
@@ -17,13 +17,13 @@ def cubic_kernel(t, a=-0.5):
         return 0
 
 
-def cubic_interpolate(x, xs, ys):
+def cubic_interpolate(x, ys, a):
     x0 = int(np.floor(x))
     result = 0.0
 
     for k in range(-1, 3):
         idx = np.clip(x0 + k, 0, len(ys) - 1)
-        result += ys[idx] * cubic_kernel(x - (x0 + k))
+        result += ys[idx] * cubic_kernel(x - (x0 + k), a)
 
     return result
 
@@ -38,17 +38,13 @@ def main():
     ys = np.array([1, 3, 2, 4], dtype=float)
 
     fig, ax = plt.subplots()
-    plt.subplots_adjust(left=0.30, bottom=0.15)
+    plt.subplots_adjust(left=0.30, bottom=0.25)
 
     ax.set_xlim(-0.2, 3.2)
-
-    margin = 1.5
-    ax.set_ylim(-5 - margin, 5 + margin)
-    
+    ax.set_ylim(-6, 6)
     ax.grid(True)
-    ax.set_title("1D Cubic Interpolation (4 Points)")
+    ax.set_title("1D Cubic Interpolation (Sharpness Control)")
 
-    # Dense curve
     x_dense = np.linspace(0, 3, 400)
 
     cubic_line, = ax.plot([], [], label="Cubic")
@@ -58,14 +54,13 @@ def main():
     ax.legend()
 
     # -------------------------------------------------
-    # Vertical sliders (one per point)
+    # Vertical sliders for control points
     # -------------------------------------------------
 
-    slider_axes = []
     sliders = []
 
     for i in range(4):
-        ax_slider = plt.axes([0.05 + i*0.05, 0.25, 0.03, 0.5])
+        ax_slider = plt.axes([0.05 + i*0.05, 0.30, 0.03, 0.5])
         slider = Slider(
             ax_slider,
             '',
@@ -73,18 +68,32 @@ def main():
             valinit=ys[i],
             orientation='vertical'
         )
-        slider_axes.append(ax_slider)
         sliders.append(slider)
+
+    # -------------------------------------------------
+    # Horizontal slider for parameter a
+    # -------------------------------------------------
+
+    ax_a = plt.axes([0.30, 0.10, 0.60, 0.04])
+    a_slider = Slider(
+        ax_a,
+        "Sharpness (a)",
+        -1.0, 0.0,
+        valinit=-0.5
+    )
 
     # -------------------------------------------------
     # Update function
     # -------------------------------------------------
 
     def update(val):
+
         for i in range(4):
             ys[i] = sliders[i].val
 
-        y_cubic = np.array([cubic_interpolate(x, xs, ys) for x in x_dense])
+        a = a_slider.val
+
+        y_cubic = np.array([cubic_interpolate(x, ys, a) for x in x_dense])
         y_linear = np.interp(x_dense, xs, ys)
 
         cubic_line.set_data(x_dense, y_cubic)
@@ -95,6 +104,8 @@ def main():
 
     for s in sliders:
         s.on_changed(update)
+
+    a_slider.on_changed(update)
 
     update(None)
     plt.show()

@@ -178,12 +178,13 @@ def create_hidden_text_image(height, width, text="password"):
 
 
 if __name__ == "__main__":
-    height = 400
-    width = 500
+    height = 200
+    width = 300
 
     gradient_image = create_gradient_image(height, width)
-    circle_image = create_circle_image(height, width)
+    cv2.imwrite(f'images\\gradient_{width}_{height}.png', gradient_image)
 
+    circle_image = create_circle_image(height, width)
     print(circle_image.shape)
     cv2.imwrite(f'images\\low_contrast_circle.png', circle_image)
 

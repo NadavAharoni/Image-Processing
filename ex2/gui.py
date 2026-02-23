@@ -9,7 +9,7 @@ class ImageApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Affine Transform Demo")
-        self.root.geometry("900x700")
+        self.root.geometry("600x500")
 
         # ---- State ----
         self.original_image = None      # Original BGR image (cv2)

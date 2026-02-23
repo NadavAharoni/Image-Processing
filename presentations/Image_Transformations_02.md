@@ -1,4 +1,4 @@
-# Image Transformations & Interpolation (01)
+# Image Transformations & Interpolation (02)
 
 ------------------------------------------------------------------------
 

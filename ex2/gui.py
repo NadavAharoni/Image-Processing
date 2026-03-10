@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
+import warp
 
 class ImageApp:
     def __init__(self, root):
@@ -133,6 +134,8 @@ class ImageApp:
         # For now we simply copy the original image.
         # --------------------------------------------------------
 
+        warp.warp_image(self.original_image, angle, sx, sy)
+    
         transformed = self.original_image.copy()
 
         self.current_image = transformed

@@ -18,4 +18,5 @@ def warp_image(image: np.ndarray,
     #       - interpolate
     # 7. Return output image
 
-    raise NotImplementedError()
+    print(scale_x, scale_y, angle_deg)
+    # raise NotImplementedError()

@@ -1,9 +1,22 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revised Image Processing Syllabus — Weeks 1–7</title>
 <style>
-  .wk { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 20px; margin-bottom: 10px; }
-  .wk-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-  .wk-num { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); letter-spacing: 0.05em; min-width: 54px; }
-  .wk-title { font-size: 15px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f9f8f5;
+    color: #1a1a18;
+    padding: 32px 24px;
+    line-height: 1.6;
+  }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #6b6a64; margin-bottom: 24px; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; font-size: 12px; color: #6b6a64; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
   .tag { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
   .t-conv  { background:#E6F1FB; color:#0C447C; }
   .t-nn    { background:#E1F5EE; color:#085041; }
@@ -11,124 +24,148 @@
   .t-gen   { background:#FBEAF0; color:#72243E; }
   .t-proj  { background:#FAEEDA; color:#633806; }
   .t-rev   { background:#F1EFE8; color:#444441; }
+  .change-pill { font-size: 11px; background: #FEF3C7; color: #92400E; border-radius: 20px; padding: 1px 8px; margin-left: 6px; }
+  .wk {
+    border: 0.5px solid #d3d1c7;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    background: #ffffff;
+  }
+  .wk-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .wk-num { font-size: 11px; font-weight: 500; color: #8b8a84; letter-spacing: 0.05em; min-width: 54px; }
+  .wk-title { font-size: 15px; font-weight: 500; color: #1a1a18; flex: 1; }
+  .sessions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .sess { flex: 1; min-width: 190px; border-radius: 8px; padding: 10px 12px; border: 0.5px solid #d3d1c7; background: #f9f8f5; }
+  .sess-lbl { font-size: 11px; color: #8b8a84; font-weight: 500; margin-bottom: 4px; }
+  .sess-txt { font-size: 13px; color: #4a4a46; line-height: 1.55; }
+  .footnote { font-size: 12px; color: #8b8a84; margin-top: 8px; padding-top: 8px; border-top: 0.5px solid #d3d1c7; }
+
   @media (prefers-color-scheme: dark) {
+    body { background: #1a1a18; color: #e8e6df; }
+    .wk { background: #242422; border-color: #3a3a36; }
+    .sess { background: #1a1a18; border-color: #3a3a36; }
+    .sess-lbl, .wk-num, .footnote, .subtitle, .legend { color: #8b8a84; }
+    .wk-title { color: #e8e6df; }
+    .sess-txt { color: #b4b2a9; }
     .t-conv  { background:#0C447C; color:#B5D4F4; }
     .t-nn    { background:#085041; color:#9FE1CB; }
     .t-cnn   { background:#3C3489; color:#CECBF6; }
     .t-gen   { background:#72243E; color:#F4C0D1; }
     .t-proj  { background:#633806; color:#FAC775; }
     .t-rev   { background:#444441; color:#D3D1C7; }
+    .change-pill { background: #78350F; color: #FDE68A; }
+    .footnote { border-color: #3a3a36; }
+    .wk-head { border-color: #3a3a36; }
   }
-  .sessions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-  .sess { flex: 1; min-width: 190px; border-radius: var(--border-radius-md); padding: 10px 12px; border: 0.5px solid var(--color-border-tertiary); }
-  .sess-lbl { font-size: 11px; color: var(--color-text-tertiary); font-weight: 500; margin-bottom: 4px; }
-  .sess-txt { font-size: 13px; color: var(--color-text-secondary); line-height: 1.55; }
-  .footnote { font-size: 12px; color: var(--color-text-tertiary); margin-top: 8px; padding-top: 8px; border-top: 0.5px solid var(--color-border-tertiary); }
-  .change-pill { font-size: 11px; background: var(--color-background-warning); color: var(--color-text-warning); border-radius: 20px; padding: 1px 8px; margin-left: 6px; }
-  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12px; color: var(--color-text-secondary); }
-  .legend span { display: flex; align-items: center; gap: 5px; }
 </style>
+</head>
+<body>
 
-<div style="padding: 4px 0 16px">
-  <div class="legend">
-    <span><span class="tag t-conv">·</span> Convolutions</span>
-    <span><span class="tag t-nn">·</span> Neural networks</span>
-    <span><span class="tag t-cnn">·</span> CNNs</span>
-    <span><span class="tag t-gen">·</span> Generative</span>
-    <span><span class="tag t-proj">·</span> Project</span>
-    <span><span class="tag t-rev">·</span> Review</span>
+<h1>Image Processing Course — Revised 7-Week Plan</h1>
+<p class="subtitle">Convolutions → Neural Networks → CNNs → Generative Models</p>
+
+<div class="legend">
+  <span><span class="tag t-conv">·</span> Convolutions</span>
+  <span><span class="tag t-nn">·</span> Neural networks</span>
+  <span><span class="tag t-cnn">·</span> CNNs</span>
+  <span><span class="tag t-gen">·</span> Generative</span>
+  <span><span class="tag t-proj">·</span> Project</span>
+  <span><span class="tag t-rev">·</span> Review</span>
+</div>
+
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 1</span>
+    <span class="wk-title">Convolutions &amp; Filters</span>
+    <span class="tag t-conv">Convolutions</span>
   </div>
-
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 1</span>
-      <span class="wk-title">Convolutions &amp; Filters</span>
-      <span class="tag t-conv">Convolutions</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">What is a convolution? Sliding kernel intuition. Edge detection: Sobel, Prewitt. Sharpening and blur kernels.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Implement 2D convolution from scratch with NumPy. Apply Sobel, Gaussian blur. Compare with OpenCV's filter2D.</div></div>
-    </div>
-    <div class="footnote">Students leave able to manually apply and explain any 3×3 kernel.</div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">What is a convolution? Sliding kernel intuition. Edge detection: Sobel, Prewitt. Sharpening and blur kernels.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Implement 2D convolution from scratch with NumPy. Apply Sobel, Gaussian blur. Compare with OpenCV's filter2D.</div></div>
   </div>
+  <div class="footnote">Students leave able to manually apply and explain any 3×3 kernel.</div>
+</div>
 
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 2</span>
-      <span class="wk-title">Perceptrons &amp; the Neural Network Idea</span>
-      <span class="tag t-nn">Neural networks</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Biological neuron analogy. Weights, bias, activation functions (sigmoid, ReLU). From one neuron to a layer. Loss functions: cross-entropy intuition.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Build a single-layer perceptron in NumPy. Classify two-class toy data. Visualize the decision boundary.</div></div>
-    </div>
-    <div class="footnote">Key message: a neural network is a chain of linear algebra + nonlinearities.</div>
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 2</span>
+    <span class="wk-title">Perceptrons &amp; the Neural Network Idea</span>
+    <span class="tag t-nn">Neural networks</span>
   </div>
-
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 3</span>
-      <span class="wk-title">Training — Backprop &amp; Gradient Descent</span>
-      <span class="tag t-nn">Neural networks</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Hidden layers and why depth helps. Forward pass as matrix multiplications. Backprop intuition (chain rule, no deep derivations). Learning rate, epochs, mini-batches.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Introduce PyTorch. Reimplement week 2's perceptron using nn.Linear. Train on a simple dataset, plot loss curves. Compare learning rates.</div></div>
-    </div>
-    <div class="footnote">Students get fluent with the PyTorch training loop: forward → loss → backward → step.</div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Biological neuron analogy. Weights, bias, activation functions (sigmoid, ReLU). From one neuron to a layer. Loss functions: cross-entropy intuition.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Build a single-layer perceptron in NumPy. Classify two-class toy data. Visualize the decision boundary.</div></div>
   </div>
+  <div class="footnote">Key message: a neural network is a chain of linear algebra + nonlinearities.</div>
+</div>
 
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 4</span>
-      <span class="wk-title">Convolutional Neural Networks</span>
-      <span class="tag t-cnn">CNNs</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Conv layers as learned filters. Pooling (max, avg). Receptive field. Pattern: Conv → ReLU → Pool → FC. Overfitting: dropout and data augmentation.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Build a small CNN in PyTorch. Train on MNIST for quick success, then on CIFAR-10. Visualize first-layer learned filters.</div></div>
-    </div>
-    <div class="footnote">"Aha" moment: week 1's hand-crafted kernels vs. week 4's learned kernels — same idea, now optimized automatically.</div>
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 3</span>
+    <span class="wk-title">Training — Backprop &amp; Gradient Descent</span>
+    <span class="tag t-nn">Neural networks</span>
   </div>
-
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 5</span>
-      <span class="wk-title">Classic Architectures + Intro to Generative Models</span>
-      <span class="tag t-cnn">CNNs</span>
-      <span class="tag t-gen">Generative</span>
-      <span class="change-pill">revised</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Architectures</div><div class="sess-txt">LeNet → AlexNet → VGG: the story of depth. Transfer learning: freeze early layers, retrain the head. Brief demo with torchvision pretrained model.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Generative intro</div><div class="sess-txt">What does "generative" mean? Autoencoders: encode → latent space → decode. VAE intuition: smooth latent space enables sampling. GAN idea: generator vs. discriminator, the adversarial game. No code yet — build the mental model.</div></div>
-    </div>
-    <div class="footnote">Narrative arc to share: GANs (2014) → StyleGAN → Diffusion models → Stable Diffusion. Students already know the end of this story.</div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Hidden layers and why depth helps. Forward pass as matrix multiplications. Backprop intuition (chain rule, no deep derivations). Learning rate, epochs, mini-batches.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Introduce PyTorch. Reimplement week 2's perceptron using nn.Linear. Train on a simple dataset, plot loss curves. Compare learning rates.</div></div>
   </div>
+  <div class="footnote">Students get fluent with the PyTorch training loop: forward → loss → backward → step.</div>
+</div>
 
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 6</span>
-      <span class="wk-title">Project Week — Build &amp; Present</span>
-      <span class="tag t-proj">Project</span>
-      <span class="change-pill">revised</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Guided work</div><div class="sess-txt">Students choose track A or B. Track A: CIFAR-10 classifier, push accuracy as high as possible, try transfer learning. Track B: DC-GAN on CIFAR-10 or a custom dataset (e.g. CelebA faces). Instructor circulates.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Presentations</div><div class="sess-txt">Each student/group presents: architecture, training curves, results, and one thing that surprised them. GAN groups show generated samples. Discussion of what worked and why.</div></div>
-    </div>
-    <div class="footnote">Track B deliverable: a grid of generated images is far more striking to show than a confusion matrix — great for motivation.</div>
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 4</span>
+    <span class="wk-title">Convolutional Neural Networks</span>
+    <span class="tag t-cnn">CNNs</span>
   </div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Theory</div><div class="sess-txt">Conv layers as learned filters. Pooling (max, avg). Receptive field. Pattern: Conv → ReLU → Pool → FC. Overfitting: dropout and data augmentation.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Lab</div><div class="sess-txt">Build a small CNN in PyTorch. Train on MNIST for quick success, then on CIFAR-10. Visualize first-layer learned filters.</div></div>
+  </div>
+  <div class="footnote">"Aha" moment: week 1's hand-crafted kernels vs. week 4's learned kernels — same idea, now optimized automatically.</div>
+</div>
 
-  <div class="wk">
-    <div class="wk-head">
-      <span class="wk-num">Week 7</span>
-      <span class="wk-title">Review &amp; Exam Preparation</span>
-      <span class="tag t-rev">Review</span>
-    </div>
-    <div class="sessions">
-      <div class="sess"><div class="sess-lbl">Session 1 — Concept recap</div><div class="sess-txt">Full arc: convolutions → perceptrons → backprop → CNNs → architectures → generative models. Typical exam questions: trace a forward pass, compute output dims, explain a design choice.</div></div>
-      <div class="sess"><div class="sess-lbl">Session 2 — Q&amp;A / Practice</div><div class="sess-txt">Students bring questions. Work through practice problems. Preview exam format.</div></div>
-    </div>
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 5</span>
+    <span class="wk-title">Classic Architectures + Intro to Generative Models</span>
+    <span class="tag t-cnn">CNNs</span>
+    <span class="tag t-gen">Generative</span>
+    <span class="change-pill">revised</span>
+  </div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Architectures</div><div class="sess-txt">LeNet → AlexNet → VGG: the story of depth. Transfer learning: freeze early layers, retrain the head. Brief demo with torchvision pretrained model.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Generative intro</div><div class="sess-txt">What does "generative" mean? Autoencoders: encode → latent space → decode. VAE intuition: smooth latent space enables sampling. GAN idea: generator vs. discriminator, the adversarial game. No code yet — build the mental model.</div></div>
+  </div>
+  <div class="footnote">Narrative arc to share: GANs (2014) → StyleGAN → Diffusion models → Stable Diffusion. Students already know the end of this story.</div>
+</div>
+
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 6</span>
+    <span class="wk-title">Project Week — Build &amp; Present</span>
+    <span class="tag t-proj">Project</span>
+    <span class="change-pill">revised</span>
+  </div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Guided work</div><div class="sess-txt">Students choose Track A or B. Track A: CIFAR-10 classifier, push accuracy as high as possible, try transfer learning. Track B: DC-GAN on CIFAR-10 or a custom dataset (e.g. CelebA faces). Instructor circulates.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Presentations</div><div class="sess-txt">Each student/group presents: architecture, training curves, results, and one thing that surprised them. GAN groups show generated samples. Discussion of what worked and why.</div></div>
+  </div>
+  <div class="footnote">Track B deliverable: a grid of generated images is far more striking to show than a confusion matrix — great for motivation.</div>
+</div>
+
+<div class="wk">
+  <div class="wk-head">
+    <span class="wk-num">Week 7</span>
+    <span class="wk-title">Review &amp; Exam Preparation</span>
+    <span class="tag t-rev">Review</span>
+  </div>
+  <div class="sessions">
+    <div class="sess"><div class="sess-lbl">Session 1 — Concept recap</div><div class="sess-txt">Full arc: convolutions → perceptrons → backprop → CNNs → architectures → generative models. Typical exam questions: trace a forward pass, compute output dims, explain a design choice.</div></div>
+    <div class="sess"><div class="sess-lbl">Session 2 — Q&amp;A / Practice</div><div class="sess-txt">Students bring questions. Work through practice problems. Preview exam format.</div></div>
   </div>
 </div>
+
+</body>
+</html>

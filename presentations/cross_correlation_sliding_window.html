@@ -1,28 +1,32 @@
 
 <style>
   :root {
-    --speed: 1s;
     --border-radius-md: 6px;
     --color-background-primary:   #ffffff;
     --color-background-secondary: #f4f4f4;
     --color-background-info:      #dbeafe;
     --color-background-success:   #dcfce7;
+    --color-background-active:    #fed7aa;
     --color-text-primary:         #111111;
     --color-text-secondary:       #555555;
     --color-text-tertiary:        #999999;
     --color-text-info:            #1d4ed8;
     --color-text-success:         #15803d;
+    --color-text-active:          #c2410c;
     --color-border-secondary:     #d1d5db;
     --color-border-tertiary:      #e5e7eb;
     --color-border-info:          #3b82f6;
     --color-border-success:       #22c55e;
+    --color-border-active:        #f97316;
   }
+  .ts { font-size:13px; font-family:system-ui,sans-serif; }
+  .th { font-size:22px; font-family:system-ui,sans-serif; }
   .btn { cursor:pointer; padding:6px 16px; border-radius:var(--border-radius-md); border:0.5px solid var(--color-border-secondary); background:var(--color-background-primary); color:var(--color-text-primary); font-size:13px; }
   .btn:hover { background:var(--color-background-secondary); }
   .btn.active { background:var(--color-background-info); color:var(--color-text-info); border-color:var(--color-border-info); }
 </style>
 
-<svg id="svg" width="100%" viewBox="0 0 680 420" role="img">
+<svg id="svg" width="100%" viewBox="0 0 680 325" role="img">
   <title>Cross-correlation sliding window animation</title>
   <desc>A 4x4 image with a 3x3 kernel sliding across it, showing each position and the resulting 2x2 output</desc>
   <defs>
@@ -38,9 +42,7 @@
 
   <!-- IMAGE GRID 4x4 at x=60, y=44, cell=44px -->
   <g id="image-grid">
-    <!-- cells -->
     <g id="img-cells"></g>
-    <!-- overlay: kernel highlight -->
     <rect id="kwin" x="60" y="44" width="132" height="132" rx="4"
           fill="none" stroke="#378ADD" stroke-width="2" opacity="0.85"/>
   </g>
@@ -52,29 +54,34 @@
   <text class="th" x="252" y="118" text-anchor="middle" fill="var(--color-text-secondary)">×</text>
 
   <!-- Arrow to output -->
-  <line x1="458" y1="152" x2="506" y2="152" class="arr" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
+  <line x1="458" y1="132" x2="506" y2="132" stroke="var(--color-border-secondary)" marker-end="url(#arrow)"/>
 
-  <!-- OUTPUT GRID 2x2 at x=510, y=100, cell=60px -->
+  <!-- OUTPUT GRID 2x2 at x=510, y=88, cell=44px -->
   <g id="output-grid"></g>
 
-  <!-- position indicator -->
-  <text id="pos-label" class="ts" x="340" y="240" text-anchor="middle" fill="var(--color-text-secondary)">Position (i=0, j=0)</text>
+  <!-- equation explanation (header) -->
+  <text style="font-size:16px;font-family:system-ui,sans-serif;" x="340" y="258" text-anchor="middle" fill="var(--color-text-tertiary)">result[i,j] = Σ (patch × kernel)</text>
 
-  <!-- computation row -->
-  <g id="comp-area">
-    <text id="comp-text" class="ts" x="340" y="270" text-anchor="middle" fill="var(--color-text-secondary)"></text>
-    <text id="comp-result" class="ts" x="340" y="292" text-anchor="middle" fill="var(--color-text-info)"></text>
-  </g>
-
-  <!-- equation explanation -->
-  <text class="ts" x="340" y="340" text-anchor="middle" fill="var(--color-text-tertiary)">result[i,j] = Σ (patch × kernel)</text>
+  <!-- position indicator (always visible) -->
+  <text id="pos-label" class="ts" x="340" y="286" text-anchor="middle" fill="var(--color-text-secondary)"></text>
+  <!-- pixel indicator (visible only in pixel mode) -->
+  <text id="pix-label" class="ts" x="340" y="304" text-anchor="middle" fill="var(--color-text-active)"></text>
 </svg>
 
-<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:8px 0 4px;">
-  <button class="btn" id="btn-prev" onclick="step(-1)">← prev</button>
-  <button class="btn active" id="btn-play" onclick="togglePlay()">▶ play</button>
-  <button class="btn" id="btn-next" onclick="step(1)">next →</button>
-  <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">Step <span id="step-lbl">1</span> / 4</span>
+<div style="text-align:center;font-size:13px;font-family:system-ui,sans-serif;margin:6px 0 2px;min-height:2.4em;">
+  <span id="comp-line"></span>
+  <span id="comp-result" style="color:var(--color-text-info);margin-left:4px;"></span>
+</div>
+
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0 4px;flex-wrap:wrap;">
+  <button class="btn" onclick="stepPos(-1)">← position</button>
+  <button class="btn" onclick="stepPos(1)">position →</button>
+  <span style="width:1px;height:20px;background:var(--color-border-secondary);margin:0 4px;"></span>
+  <button class="btn" onclick="stepPix(-1)">← pixel</button>
+  <button class="btn" onclick="stepPix(1)">pixel →</button>
+  <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">
+    Position <span id="pos-lbl">1</span>/4<span id="pix-lbl"></span>
+  </span>
 </div>
 
 <script>
@@ -91,7 +98,7 @@ const kernel = [
 ];
 
 const positions = [{i:0,j:0},{i:0,j:1},{i:1,j:0},{i:1,j:1}];
-let cur = 0, playing = false, timer = null;
+let curPos = 0, curPix = -1;
 
 const CELL = 44, OCELL = 44;
 const IX=60, IY=44, KX=280, KY=44, OX=510, OY=88;
@@ -123,7 +130,8 @@ for (let r=0;r<4;r++) for (let c=0;c<4;c++) {
   g.dataset.r = r; g.dataset.c = c;
 }
 
-// build kernel grid
+// build kernel grid — keep element refs for per-cell highlighting
+const kgCells = [];
 const kg = document.getElementById('kernel-grid');
 for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
   const g = el('g',{},kg);
@@ -132,6 +140,7 @@ for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
   txt(kernel[r][c], {x:KX+c*CELL+CELL/2, y:KY+r*CELL+CELL/2,
     'text-anchor':'middle', 'dominant-baseline':'central',
     class:'ts', fill:'var(--color-text-info)'},g);
+  kgCells.push(g);
 }
 
 // build output grid
@@ -144,7 +153,7 @@ for (let r=0;r<2;r++) for (let c=0;c<2;c++) {
   const t = txt('', {x:OX+c*OCELL+OCELL/2, y:OY+r*OCELL+OCELL/2,
     'text-anchor':'middle', 'dominant-baseline':'central',
     class:'ts', fill:'var(--color-text-primary)'},g);
-  outRects.push({rect, idx:r*2+c, r, c});
+  outRects.push({rect, r, c});
   outTexts.push(t);
 }
 
@@ -156,49 +165,94 @@ function compute(i,j) {
 }
 const results = positions.map(p=>compute(p.i,p.j));
 
-function render(pos) {
+function render(pos, pix) {
   const {i,j} = positions[pos];
+  const hasPix = pix >= 0;
+  const pr = hasPix ? Math.floor(pix/3) : -1;
+  const pc = hasPix ? pix % 3 : -1;
 
   // move kernel window on image
   document.getElementById('kwin').setAttribute('x', IX+j*CELL);
   document.getElementById('kwin').setAttribute('y', IY+i*CELL);
 
-  // highlight image cells in patch
-  const cells = imgCells.querySelectorAll('g');
-  cells.forEach(g=>{
+  // highlight image cells
+  imgCells.querySelectorAll('g').forEach(g => {
     const r=+g.dataset.r, c=+g.dataset.c;
-    const inPatch = r>=i&&r<i+3&&c>=j&&c<j+3;
+    const inPatch = r>=i && r<i+3 && c>=j && c<j+3;
+    const isActive = hasPix && r===i+pr && c===j+pc;
     g.querySelector('rect').setAttribute('fill',
-      inPatch?'var(--color-background-info)':'var(--color-background-secondary)');
+      isActive ? 'var(--color-background-active)' :
+      inPatch  ? 'var(--color-background-info)' : 'var(--color-background-secondary)');
     g.querySelector('rect').setAttribute('stroke',
-      inPatch?'var(--color-border-info)':'var(--color-border-tertiary)');
-    g.querySelector('rect').setAttribute('opacity', inPatch?'0.45':'1');
+      isActive ? 'var(--color-border-active)' :
+      inPatch  ? 'var(--color-border-info)' : 'var(--color-border-tertiary)');
+    g.querySelector('rect').setAttribute('opacity',
+      isActive ? '0.75' : inPatch ? '0.45' : '1');
     g.querySelector('text').setAttribute('fill',
-      inPatch?'var(--color-text-info)':'var(--color-text-primary)');
+      isActive ? 'var(--color-text-active)' :
+      inPatch  ? 'var(--color-text-info)' : 'var(--color-text-primary)');
   });
 
-  // position label
-  document.getElementById('pos-label').textContent = `Position (i=${i}, j=${j})  →  image[${i}:${i+3}, ${j}:${j+3}]`;
+  // highlight kernel cells
+  kgCells.forEach((g, idx) => {
+    const kr=Math.floor(idx/3), kc=idx%3;
+    const isActive = hasPix && kr===pr && kc===pc;
+    g.querySelector('rect').setAttribute('fill',
+      isActive ? 'var(--color-background-active)' : 'var(--color-background-info)');
+    g.querySelector('rect').setAttribute('stroke',
+      isActive ? 'var(--color-border-active)' : 'var(--color-border-info)');
+    g.querySelector('rect').setAttribute('opacity',
+      isActive ? '0.75' : '0.35');
+    g.querySelector('text').setAttribute('fill',
+      isActive ? 'var(--color-text-active)' : 'var(--color-text-info)');
+  });
 
-  // computation text
-  const terms = [];
-  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
-    const iv = image[i+r][j+c], kv = kernel[r][c];
-    if (kv!==0) terms.push(`${iv}×(${kv})`);
+  // position label (always shown)
+  document.getElementById('pos-label').textContent =
+    `Kernel position (${i}, ${j})  →  image patch [${i}:${i+3}, ${j}:${j+3}]`;
+
+  // pixel label (only in pixel mode)
+  if (hasPix) {
+    const iv = image[i+pr][j+pc], kv = kernel[pr][pc];
+    document.getElementById('pix-label').textContent =
+      `pixel (${pr}, ${pc}):  image[${i+pr}][${j+pc}] × kernel[${pr}][${pc}]  =  ${iv} × (${kv})  =  ${iv*kv}`;
+  } else {
+    document.getElementById('pix-label').textContent = '';
   }
-  document.getElementById('comp-text').textContent = terms.slice(0,6).join(' + ') + (terms.length>6?' + …':'');
+
+  // computation line — individual spans so active term can be highlighted
+  const compLine = document.getElementById('comp-line');
+  compLine.innerHTML = '';
+  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
+    const idx = r*3+c;
+    const iv = image[i+r][j+c], kv = kernel[r][c];
+    if (idx > 0) {
+      const sep = document.createElement('span');
+      sep.textContent = ' + ';
+      sep.style.color = 'var(--color-text-tertiary)';
+      compLine.appendChild(sep);
+    }
+    const span = document.createElement('span');
+    span.textContent = `${iv}×(${kv})`;
+    if (hasPix && idx === pix) {
+      span.style.color = 'var(--color-text-active)';
+      span.style.fontWeight = 'bold';
+    } else {
+      span.style.color = hasPix ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)';
+    }
+    compLine.appendChild(span);
+  }
   document.getElementById('comp-result').textContent = `= ${results[pos]}`;
 
   // output cells
   for (let p=0;p<=pos;p++) {
-    const {r,c} = outRects[p];
     outRects[p].rect.setAttribute('fill',
-      p===pos?'var(--color-background-success)':'var(--color-background-secondary)');
+      p===pos ? 'var(--color-background-success)' : 'var(--color-background-secondary)');
     outRects[p].rect.setAttribute('stroke',
-      p===pos?'var(--color-border-success)':'var(--color-border-tertiary)');
+      p===pos ? 'var(--color-border-success)' : 'var(--color-border-tertiary)');
     outTexts[p].textContent = results[p];
     outTexts[p].setAttribute('fill',
-      p===pos?'var(--color-text-success)':'var(--color-text-secondary)');
+      p===pos ? 'var(--color-text-success)' : 'var(--color-text-secondary)');
   }
   for (let p=pos+1;p<4;p++) {
     outRects[p].rect.setAttribute('fill','var(--color-background-secondary)');
@@ -207,26 +261,25 @@ function render(pos) {
     outTexts[p].setAttribute('fill','var(--color-text-tertiary)');
   }
 
-  document.getElementById('step-lbl').textContent = pos+1;
+  // step label
+  document.getElementById('pos-lbl').textContent = pos+1;
+  document.getElementById('pix-lbl').textContent = hasPix ? `  ·  pixel ${pix+1}/9` : '';
 }
 
-function step(d) {
-  cur = (cur+d+4)%4;
-  render(cur);
+function stepPos(d) {
+  curPos = (curPos + d + 4) % 4;
+  curPix = -1;
+  render(curPos, curPix);
 }
 
-function togglePlay() {
-  playing = !playing;
-  document.getElementById('btn-play').textContent = playing ? '⏸ pause' : '▶ play';
-  if (playing) { tick(); } else { clearTimeout(timer); }
+function stepPix(d) {
+  if (d > 0) {
+    curPix = curPix >= 8 ? -1 : curPix + 1;
+  } else {
+    curPix = curPix <= -1 ? 8 : curPix - 1;
+  }
+  render(curPos, curPix);
 }
 
-function tick() {
-  if (!playing) return;
-  cur = (cur+1)%4;
-  render(cur);
-  timer = setTimeout(tick, 1600);
-}
-
-render(0);
+render(curPos, curPix);
 </script>

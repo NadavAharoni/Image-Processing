@@ -77,11 +77,10 @@
   <button class="btn" onclick="stepPos(-1)">← position</button>
   <button class="btn" onclick="stepPos(1)">position →</button>
   <span style="width:1px;height:20px;background:var(--color-border-secondary);margin:0 4px;"></span>
-  <button class="btn" onclick="stepPix(-1)">← pixel</button>
-  <button class="btn" onclick="stepPix(1)">pixel →</button>
-  <span style="font-size:13px;color:var(--color-text-secondary);margin-left:8px;">
-    Position <span id="pos-lbl">1</span>/4<span id="pix-lbl"></span>
-  </span>
+  <button class="btn" onclick="stepPix()">pixel →</button>
+  <button class="btn" onclick="sumPos()">Σ sum</button>
+  <span style="width:1px;height:20px;background:var(--color-border-secondary);margin:0 4px;"></span>
+  <button class="btn" onclick="reset()">reset</button>
 </div>
 
 <script>
@@ -99,6 +98,7 @@ const kernel = [
 
 const positions = [{i:0,j:0},{i:0,j:1},{i:1,j:0},{i:1,j:1}];
 let curPos = 0, curPix = -1;
+const done = new Set();
 
 const CELL = 44, OCELL = 44;
 const IX=60, IY=44, KX=280, KY=44, OX=510, OY=88;
@@ -130,7 +130,7 @@ for (let r=0;r<4;r++) for (let c=0;c<4;c++) {
   g.dataset.r = r; g.dataset.c = c;
 }
 
-// build kernel grid — keep element refs for per-cell highlighting
+// build kernel grid
 const kgCells = [];
 const kg = document.getElementById('kernel-grid');
 for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
@@ -207,11 +207,11 @@ function render(pos, pix) {
       isActive ? 'var(--color-text-active)' : 'var(--color-text-info)');
   });
 
-  // position label (always shown)
+  // position label
   document.getElementById('pos-label').textContent =
     `Kernel position (${i}, ${j})  →  image patch [${i}:${i+3}, ${j}:${j+3}]`;
 
-  // pixel label (only in pixel mode)
+  // pixel label
   if (hasPix) {
     const iv = image[i+pr][j+pc], kv = kernel[pr][pc];
     document.getElementById('pix-label').textContent =
@@ -220,50 +220,65 @@ function render(pos, pix) {
     document.getElementById('pix-label').textContent = '';
   }
 
-  // computation line — individual spans so active term can be highlighted
+  // computation line
   const compLine = document.getElementById('comp-line');
   compLine.innerHTML = '';
-  for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
-    const idx = r*3+c;
-    const iv = image[i+r][j+c], kv = kernel[r][c];
-    if (idx > 0) {
-      const sep = document.createElement('span');
-      sep.textContent = ' + ';
-      sep.style.color = 'var(--color-text-tertiary)';
-      compLine.appendChild(sep);
-    }
-    const span = document.createElement('span');
-    span.textContent = `${iv}×(${kv})`;
-    if (hasPix && idx === pix) {
-      span.style.color = 'var(--color-text-active)';
-      span.style.fontWeight = 'bold';
-    } else {
-      span.style.color = hasPix ? 'var(--color-text-tertiary)' : 'var(--color-text-secondary)';
-    }
-    compLine.appendChild(span);
-  }
-  document.getElementById('comp-result').textContent = `= ${results[pos]}`;
+  const compResult = document.getElementById('comp-result');
 
-  // output cells
-  for (let p=0;p<=pos;p++) {
+  function span(text, color, bold) {
+    const s = document.createElement('span');
+    s.textContent = text;
+    s.style.color = color;
+    if (bold) s.style.fontWeight = 'bold';
+    compLine.appendChild(s);
+  }
+
+  if (hasPix) {
+    // show terms 0..pix with running total; active term highlighted
+    let runningSum = 0;
+    for (let k=0; k<=pix; k++) {
+      const kr=Math.floor(k/3), kc=k%3;
+      const iv2=image[i+kr][j+kc], kv2=kernel[kr][kc];
+      if (k > 0) span('  +  ', 'var(--color-text-tertiary)', false);
+      const isActive = k === pix;
+      span(`${iv2}×(${kv2})`, isActive ? 'var(--color-text-active)' : 'var(--color-text-secondary)', isActive);
+      runningSum += iv2*kv2;
+    }
+    span('  =  ', 'var(--color-text-tertiary)', false);
+    span(`${runningSum}`, 'var(--color-text-info)', true);
+    compResult.textContent = '';
+  } else if (done.has(pos)) {
+    // show full formula
+    let s = 0;
+    for (let k=0; k<9; k++) {
+      const kr=Math.floor(k/3), kc=k%3;
+      const iv2=image[i+kr][j+kc], kv2=kernel[kr][kc];
+      if (k > 0) span('  +  ', 'var(--color-text-tertiary)', false);
+      span(`${iv2}×(${kv2})`, 'var(--color-text-secondary)', false);
+      s += iv2*kv2;
+    }
+    span('  =  ', 'var(--color-text-tertiary)', false);
+    span(`${s}`, 'var(--color-text-info)', true);
+    compResult.textContent = '';
+  } else {
+    span('sum = 0', 'var(--color-text-tertiary)', false);
+    compResult.textContent = '';
+  }
+
+  // output cells — show result only for completed positions
+  for (let p=0; p<4; p++) {
+    const isDone = done.has(p);
+    const isCur  = p === pos;
     outRects[p].rect.setAttribute('fill',
-      p===pos ? 'var(--color-background-success)' : 'var(--color-background-secondary)');
+      isDone && isCur  ? 'var(--color-background-success)' : 'var(--color-background-secondary)');
     outRects[p].rect.setAttribute('stroke',
-      p===pos ? 'var(--color-border-success)' : 'var(--color-border-tertiary)');
-    outTexts[p].textContent = results[p];
+      isDone && isCur  ? 'var(--color-border-success)' : 'var(--color-border-tertiary)');
+    outTexts[p].textContent = isDone ? results[p] : '0';
     outTexts[p].setAttribute('fill',
-      p===pos ? 'var(--color-text-success)' : 'var(--color-text-secondary)');
-  }
-  for (let p=pos+1;p<4;p++) {
-    outRects[p].rect.setAttribute('fill','var(--color-background-secondary)');
-    outRects[p].rect.setAttribute('stroke','var(--color-border-tertiary)');
-    outTexts[p].textContent='?';
-    outTexts[p].setAttribute('fill','var(--color-text-tertiary)');
+      isDone && isCur  ? 'var(--color-text-success)' :
+      isDone           ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)');
   }
 
-  // step label
-  document.getElementById('pos-lbl').textContent = pos+1;
-  document.getElementById('pix-lbl').textContent = hasPix ? `  ·  pixel ${pix+1}/9` : '';
 }
 
 function stepPos(d) {
@@ -272,12 +287,27 @@ function stepPos(d) {
   render(curPos, curPix);
 }
 
-function stepPix(d) {
-  if (d > 0) {
-    curPix = curPix >= 8 ? -1 : curPix + 1;
+function stepPix() {
+  if (curPix >= 8) {
+    // last pixel done — complete this position
+    done.add(curPos);
+    curPix = -1;
   } else {
-    curPix = curPix <= -1 ? 8 : curPix - 1;
+    curPix += 1;
   }
+  render(curPos, curPix);
+}
+
+function sumPos() {
+  done.add(curPos);
+  curPix = -1;
+  render(curPos, curPix);
+}
+
+function reset() {
+  done.clear();
+  curPos = 0;
+  curPix = -1;
   render(curPos, curPix);
 }
 

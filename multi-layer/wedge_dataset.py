@@ -222,23 +222,23 @@ def plot_wedge_dataset(X, y, a1, b1, c1, a2, b2, c2, intersection=None):
 
     # Draw boundary lines across the plot range
     x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    x_range = np.linspace(x_min, x_max, 200)
+    # x_range = np.linspace(x_min, x_max, 200)
 
-    def line_y(x, a, b, c):
-        """Compute y from ax + by + c = 0 → y = -(ax + c) / b"""
-        if abs(b) < 1e-10:
-            return None  # Vertical line
-        return -(a * x + c) / b
+    # def line_y(x, a, b, c):
+    #     """Compute y from ax + by + c = 0 → y = -(ax + c) / b"""
+    #     if abs(b) < 1e-10:
+    #         return None  # Vertical line
+    #     return -(a * x + c) / b
 
-    y1 = line_y(x_range, a1, b1, c1)
-    y2 = line_y(x_range, a2, b2, c2)
+    # y1 = line_y(x_range, a1, b1, c1)
+    # y2 = line_y(x_range, a2, b2, c2)
 
-    if y1 is not None:
-        ax.plot(x_range, y1, color='darkgreen', linewidth=2,
-                linestyle='--', label='Line 1')
-    if y2 is not None:
-        ax.plot(x_range, y2, color='olive', linewidth=2,
-                linestyle='--', label='Line 2')
+    # if y1 is not None:
+    #     ax.plot(x_range, y1, color='darkgreen', linewidth=2,
+    #             linestyle='--', label='Line 1')
+    # if y2 is not None:
+    #     ax.plot(x_range, y2, color='olive', linewidth=2,
+    #             linestyle='--', label='Line 2')
 
     # Mark intersection
     if intersection is not None:

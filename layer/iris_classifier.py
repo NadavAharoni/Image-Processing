@@ -63,7 +63,7 @@ for epoch in range(EPOCHS):
         logits = model(X_batch)         # forward pass  → (batch, 3)
         loss   = loss_fn(logits, y_batch)
         loss.backward()                 # backprop
-        optimizer.step()               # update weights
+        optimizer.step()                # update weights
         epoch_loss += loss.item() * len(X_batch)
 
     train_losses.append(epoch_loss / len(X_train_t))

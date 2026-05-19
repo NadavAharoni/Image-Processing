@@ -21,6 +21,8 @@ LEARNING_RATE = 0.001
 BATCH_SIZE    = 64
 EPOCHS        = 5
 
+SAVE_PATH     = "mnist_cnn.pth"   # where the trained weights are saved
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -130,4 +132,14 @@ for epoch in range(1, EPOCHS + 1):
     test_acc = correct / len(test_loader.dataset)
     print(f"Epoch {epoch}/{EPOCHS}  |  train loss: {train_loss:.4f}  |  test acc: {test_acc:.4f}")
 
-print("\nDone.")
+torch.save({
+    'model_state': model.state_dict(),
+    'config': {
+        'conv1_filters': CONV1_FILTERS,
+        'conv2_filters': CONV2_FILTERS,
+        'fc_hidden':     FC_HIDDEN,
+    }
+}, SAVE_PATH)
+
+print(f"\nWeights saved to {SAVE_PATH}")
+print("Open inference_gui.py to classify digits you draw.")

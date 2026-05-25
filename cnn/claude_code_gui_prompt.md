@@ -36,8 +36,14 @@ Add three capabilities:
 
 ### 2. Correct-label selector
 
-- Add a row of 10 radio buttons labeled 0–9, placed next to the
-  probability bars in the results panel.
+- Add a **column** of 10 radio buttons labeled 0–9, placed to the right
+  of the probability bars in the results panel, with each radio button
+  aligned to its corresponding bar row. Use a shared grid so the rows
+  stay in sync. Add a small "Label" header above the column.
+- Leave ~32 px of horizontal gap between the bar area and the radio
+  column (via `padx` on the grid cell). Add extra left padding to the
+  entire results panel so it is visually separated from the drawing
+  canvas.
 - The user selects the digit they intended to draw. This is the ground
   truth label.
 - The **Save button** (see §3) must remain **disabled** until a radio

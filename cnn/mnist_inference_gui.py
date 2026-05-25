@@ -153,7 +153,7 @@ class App(tk.Tk):
 
         # ── Right: prediction panel ──
         right = tk.Frame(self, bg="#1e1e1e", padx=16, pady=16)
-        right.grid(row=0, column=1, sticky="n")
+        right.grid(row=0, column=1, sticky="n", padx=(16, 0))
 
         tk.Label(right, text="Prediction", font=title_font,
                  bg="#1e1e1e", fg="#cccccc").pack(anchor="w")
@@ -165,53 +165,46 @@ class App(tk.Tk):
         tk.Label(right, text="Probabilities", font=label_font,
                  bg="#1e1e1e", fg="#888888").pack(anchor="w")
 
-        # One bar per digit class
+        # Bars + correct-label radio buttons in a shared grid for row alignment
         self.bars       = []
         self.pct_labels = []
-        bar_frame = tk.Frame(right, bg="#1e1e1e")
-        bar_frame.pack(fill="x", pady=(4, 0))
+        bars_radio = tk.Frame(right, bg="#1e1e1e")
+        bars_radio.pack(anchor="w", pady=(4, 0))
 
         BAR_MAX = 180  # max bar width in pixels
 
+        # "Label" header above the radio column
+        tk.Label(bars_radio, text="Label", font=bar_font,
+                 bg="#1e1e1e", fg="#888888").grid(row=0, column=3, padx=(32, 0), sticky="w")
+
         for digit in range(10):
-            row = tk.Frame(bar_frame, bg="#1e1e1e")
-            row.pack(fill="x", pady=1)
+            r = digit + 1  # row 0 is the header
 
-            tk.Label(row, text=str(digit), font=bar_font, width=2,
-                     bg="#1e1e1e", fg="#aaaaaa").pack(side="left")
+            tk.Label(bars_radio, text=str(digit), font=bar_font, width=2,
+                     bg="#1e1e1e", fg="#aaaaaa").grid(row=r, column=0, pady=1)
 
-            bg_bar = tk.Frame(row, bg="#333333", width=BAR_MAX, height=14)
-            bg_bar.pack(side="left", padx=(4, 4))
-            bg_bar.pack_propagate(False)
+            bg_bar = tk.Frame(bars_radio, bg="#333333", width=BAR_MAX, height=14)
+            bg_bar.grid(row=r, column=1, padx=(4, 4), pady=1)
+            bg_bar.grid_propagate(False)
 
             fill = tk.Frame(bg_bar, bg="#4a9eff", width=0, height=14)
             fill.place(x=0, y=0, height=14)
 
-            pct = tk.Label(row, text="  0%", font=bar_font, width=5,
+            pct = tk.Label(bars_radio, text="  0%", font=bar_font, width=5,
                            bg="#1e1e1e", fg="#666666", anchor="w")
-            pct.pack(side="left")
+            pct.grid(row=r, column=2, pady=1)
 
-            self.bars.append((fill, BAR_MAX))
-            self.pct_labels.append(pct)
-
-        self._BAR_MAX = BAR_MAX
-
-        # Correct label selector
-        tk.Label(right, text="Correct label", font=label_font,
-                 bg="#1e1e1e", fg="#888888").pack(anchor="w", pady=(16, 4))
-
-        radio_frame = tk.Frame(right, bg="#1e1e1e")
-        radio_frame.pack(anchor="w")
-
-        for d in range(10):
             tk.Radiobutton(
-                radio_frame, text=str(d), variable=self._correct_label,
-                value=d, font=bar_font,
+                bars_radio, text=str(digit), variable=self._correct_label,
+                value=digit, font=bar_font,
                 bg="#1e1e1e", fg="#aaaaaa",
                 activebackground="#1e1e1e", activeforeground="#cccccc",
                 selectcolor="#1e1e1e",
                 command=self._on_label_selected,
-            ).grid(row=0, column=d, padx=1)
+            ).grid(row=r, column=3, padx=(32, 0), pady=1, sticky="w")
+
+            self.bars.append((fill, BAR_MAX))
+            self.pct_labels.append(pct)
 
         # Save button — disabled until a correct label is chosen
         self._save_btn = tk.Button(

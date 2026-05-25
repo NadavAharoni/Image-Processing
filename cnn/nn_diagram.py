@@ -18,20 +18,20 @@ from pathlib import Path
 #   type     : one of the keys in COLORS below
 
 NETWORK = [
-    {"id": "input",   "label": "Input",    "sublabel": "3×32×32",          "type": "input"},
-    {"id": "conv1a",  "label": "Conv 1a",  "sublabel": "32 filters, 3×3",  "type": "conv"},
-    {"id": "conv1b",  "label": "Conv 1b",  "sublabel": "32 filters, 3×3",  "type": "conv"},
-    {"id": "pool1",   "label": "MaxPool",  "sublabel": "→ 32×16×16",       "type": "pool"},
-    {"id": "conv2a",  "label": "Conv 2a",  "sublabel": "64 filters, 3×3",  "type": "conv"},
-    {"id": "conv2b",  "label": "Conv 2b",  "sublabel": "64 filters, 3×3",  "type": "conv"},
-    {"id": "pool2",   "label": "MaxPool",  "sublabel": "→ 64×8×8",         "type": "pool"},
-    {"id": "conv3a",  "label": "Conv 3a",  "sublabel": "128 filters, 3×3", "type": "conv"},
-    {"id": "conv3b",  "label": "Conv 3b",  "sublabel": "128 filters, 3×3", "type": "conv"},
-    {"id": "pool3",   "label": "MaxPool",  "sublabel": "→ 128×4×4",        "type": "pool"},
-    {"id": "flatten", "label": "Flatten",  "sublabel": "2048 units",        "type": "flatten"},
-    {"id": "fc1",     "label": "FC layer", "sublabel": "2048 → 256, ReLU",  "type": "fc"},
-    {"id": "fc2",     "label": "FC layer", "sublabel": "256 → 10",          "type": "fc"},
-    {"id": "softmax", "label": "Softmax",  "sublabel": "10 classes",        "type": "output"},
+    {"id": "input",   "label": "Input",    "sublabel": "3×32×32",          "output": "",              "type": "input"},
+    {"id": "conv1a",  "label": "Conv 1a",  "sublabel": "32 filters, 3×3",  "output": "→ 32×32×32",   "type": "conv"},
+    {"id": "conv1b",  "label": "Conv 1b",  "sublabel": "32 filters, 3×3",  "output": "→ 32×32×32",   "type": "conv"},
+    {"id": "pool1",   "label": "MaxPool",  "sublabel": "",                  "output": "→ 32×16×16",   "type": "pool"},
+    {"id": "conv2a",  "label": "Conv 2a",  "sublabel": "64 filters, 3×3",  "output": "→ 64×16×16",   "type": "conv"},
+    {"id": "conv2b",  "label": "Conv 2b",  "sublabel": "64 filters, 3×3",  "output": "→ 64×16×16",   "type": "conv"},
+    {"id": "pool2",   "label": "MaxPool",  "sublabel": "",                  "output": "→ 64×8×8",     "type": "pool"},
+    {"id": "conv3a",  "label": "Conv 3a",  "sublabel": "128 filters, 3×3", "output": "→ 128×8×8",    "type": "conv"},
+    {"id": "conv3b",  "label": "Conv 3b",  "sublabel": "128 filters, 3×3", "output": "→ 128×8×8",    "type": "conv"},
+    {"id": "pool3",   "label": "MaxPool",  "sublabel": "",                  "output": "→ 128×4×4",    "type": "pool"},
+    {"id": "flatten", "label": "Flatten",  "sublabel": "",                  "output": "2048 units",    "type": "flatten"},
+    {"id": "fc1",     "label": "FC layer", "sublabel": "2048 → 256",        "output": "ReLU → 256",    "type": "fc"},
+    {"id": "fc2",     "label": "FC layer", "sublabel": "256 → 10",          "output": "",              "type": "fc"},
+    {"id": "softmax", "label": "Softmax",  "sublabel": "10 classes",        "output": "",              "type": "output"},
 ]
 
 # Edges: list of (from_id, to_id). Sequential by default — override here.
@@ -42,7 +42,7 @@ EDGES = None
 
 NODES_PER_ROW = 4      # how many nodes before wrapping to next row
 BOX_W         = 130    # box width  (px)
-BOX_H         = 60     # box height (px)
+BOX_H         = 76     # box height (px) — fits title + sublabel + output
 GAP_X         = 24     # horizontal gap between boxes
 GAP_ROW       = 60     # vertical gap between rows
 
@@ -217,23 +217,43 @@ def render_svg(network, edges, nodes_per_row, box_w, box_h, gap_x, gap_row):
         x, y = node["x"], node["y"]
         cx   = x + box_w / 2
 
-        # Title-only or title+sublabel vertical centering
+        # Three optional text lines: title (bold), sublabel, output shape
+        # Vertical layout: evenly space whichever lines are non-empty
         has_sub = bool(node["sublabel"])
-        title_y = (y + box_h / 2 - 8) if has_sub else (y + box_h / 2)
-        sub_y   = y + box_h / 2 + 12
+        has_out = bool(node.get("output", ""))
+        n_lines = 1 + int(has_sub) + int(has_out)
+
+        # Distribute lines evenly across the box height with 14px spacing
+        line_gap = 14
+        total_span = (n_lines - 1) * line_gap
+        first_y = y + box_h / 2 - total_span / 2
+
+        text_lines = [(node["label"], "title")]
+        if has_sub:
+            text_lines.append((node["sublabel"], "sub"))
+        if has_out:
+            text_lines.append((node.get("output", ""), "out"))
 
         lines.append(f'  <g class="node-{typ}">')
         lines.append(f'    <rect x="{x}" y="{y}" width="{box_w}" height="{box_h}" '
                      f'rx="8" fill="{c["fill"]}" stroke="{c["stroke"]}" stroke-width="0.8"/>')
-        lines.append(f'    <text class="ntitle" x="{cx:.1f}" y="{title_y:.1f}" '
-                     f'text-anchor="middle" dominant-baseline="central" '
-                     f'font-family="system-ui,sans-serif" font-size="13" '
-                     f'font-weight="500" fill="{c["title"]}">{node["label"]}</text>')
-        if has_sub:
-            lines.append(f'    <text class="nsub" x="{cx:.1f}" y="{sub_y:.1f}" '
-                         f'text-anchor="middle" dominant-baseline="central" '
-                         f'font-family="system-ui,sans-serif" font-size="11" '
-                         f'fill="{c["sub"]}">{node["sublabel"]}</text>')
+        for li, (txt, role) in enumerate(text_lines):
+            ty = first_y + li * line_gap
+            if role == "title":
+                lines.append(f'    <text x="{cx:.1f}" y="{ty:.1f}" '
+                             f'text-anchor="middle" dominant-baseline="central" '
+                             f'font-family="system-ui,sans-serif" font-size="13" '
+                             f'font-weight="500" fill="{c["title"]}">{txt}</text>')
+            elif role == "sub":
+                lines.append(f'    <text x="{cx:.1f}" y="{ty:.1f}" '
+                             f'text-anchor="middle" dominant-baseline="central" '
+                             f'font-family="system-ui,sans-serif" font-size="11" '
+                             f'fill="{c["sub"]}">{txt}</text>')
+            else:  # output shape — lighter, italic
+                lines.append(f'    <text x="{cx:.1f}" y="{ty:.1f}" '
+                             f'text-anchor="middle" dominant-baseline="central" '
+                             f'font-family="system-ui,sans-serif" font-size="11" '
+                             f'font-style="italic" fill="{c["sub"]}" opacity="0.8">{txt}</text>')
         lines.append('  </g>')
 
     # ── Legend ────────────────────────────────────────────────────────────────

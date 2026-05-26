@@ -126,11 +126,12 @@ def render(depth, rows, cols, cell, label_gap, out_path):
     min_y, max_y = min(all_y), max(all_y)
 
     pad    = 20
-    width  = max_x - min_x + pad * 2
+    left_pad = 80   # extra room for the depth label on the left side
+    width  = max_x - min_x + pad + left_pad
     height = max_y - min_y + pad * 2 + label_gap
 
     # Offset so everything sits within the canvas
-    ox_off = -min_x + pad
+    ox_off = -min_x + left_pad
     oy_off = -min_y + pad
 
     lines.append(f'<svg width="{width:.0f}" height="{height:.0f}" '

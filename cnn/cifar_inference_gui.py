@@ -67,7 +67,16 @@ class CifarCNN(nn.Module):
 # ── Load model ────────────────────────────────────────────────────────────────
 
 checkpoint = torch.load(SAVE_PATH, map_location='cpu')
-config     = checkpoint['config']
+raw_config = checkpoint['config']
+# Normalise key names — older checkpoints used 'block1_filters' etc.
+config = {
+    'block1':      raw_config.get('block1', raw_config.get('block1_filters')),
+    'block2':      raw_config.get('block2', raw_config.get('block2_filters')),
+    'block3':      raw_config.get('block3', raw_config.get('block3_filters')),
+    'fc_hidden':   raw_config['fc_hidden'],
+    'use_bn':      raw_config['use_bn'],
+    'use_dropout': raw_config['use_dropout'],
+}
 model      = CifarCNN(**config)
 model.load_state_dict(checkpoint['model_state'])
 model.eval()

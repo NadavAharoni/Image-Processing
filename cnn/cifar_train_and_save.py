@@ -65,8 +65,8 @@ test_transform = transforms.Compose([
 
 train_data   = datasets.CIFAR10(root='./data', train=True,  download=True, transform=train_transform)
 test_data    = datasets.CIFAR10(root='./data', train=False, download=True, transform=test_transform)
-train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=2)
-test_loader  = DataLoader(test_data,  batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
+train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True,  num_workers=0)
+test_loader  = DataLoader(test_data,  batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
 
 CLASSES = ['airplane', 'automobile', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck']

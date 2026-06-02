@@ -176,19 +176,25 @@ def render(depth, rows, cols, cell, label_gap, out_path):
     lx, ly2 = iso(d_mid, rows - 1, 0, cell)
     ann(lx - dx_ann - 6, ly2 + dy_ann + cell/2, f"depth={depth}", "end")
 
-    # cols label — right side bottom
-    rx0, ry0 = iso(0, rows-1, 0, cell)
-    rx1, ry1 = iso(0, rows-1, cols-1, cell)
-    ann((rx0 + rx1)/2 + dx_ann + 6,
-        (ry0 + ry1)/2 + dy_ann + cell + 10,
-        f"cols={cols}", "middle")
+    # cols label — left face (r=rows-1) spans all cols; label its bottom edge at d=0
+    # The left face at (d=0, r=rows-1) runs from c=0 (right bottom) to c=cols-1 (left bottom).
+    # bottom-right corner of left face at c=0:      (lf_rx0, lf_ry0+2*dy_ann+cell)
+    # bottom-left  corner of left face at c=cols-1: (lf_lx1-dx_ann, lf_ly1+dy_ann+cell)
+    lf_rx0, lf_ry0 = iso(0, rows-1, 0, cell)           # right end  (c=0)
+    lf_lx1, lf_ly1 = iso(0, rows-1, cols-1, cell)      # left  end  (c=cols-1)
+    col_mid_x = (lf_rx0 + lf_lx1 - dx_ann) / 2
+    col_mid_y = (lf_ry0 + 2*dy_ann + cell + lf_ly1 + dy_ann + cell) / 2
+    ann(col_mid_x - 4, col_mid_y + 10, f"cols={cols}", "end")
 
-    # rows label — left side bottom
-    lx0, ly0 = iso(0, 0, 0, cell)
-    lx1, ly1 = iso(0, rows-1, 0, cell)
-    ann((lx0 + lx1)/2 - dx_ann - 6,
-        (ly0 + ly1)/2 + dy_ann + cell/2,
-        f"rows={rows}", "end")
+    # rows label — right face (c=cols-1) spans all rows; label its bottom edge at d=0
+    # The right face at (d=0, c=cols-1) runs from r=0 (top-right) to r=rows-1 (bottom-left).
+    # bottom-right corner of right face at r=0:      (rf_rx0+dx_ann, rf_ry0+dy_ann+cell)
+    # bottom-left  corner of right face at r=rows-1: (rf_lx1, rf_ly1+2*dy_ann+cell)
+    rf_rx0, rf_ry0 = iso(0, 0, cols-1, cell)           # top    end  (r=0)
+    rf_lx1, rf_ly1 = iso(0, rows-1, cols-1, cell)      # bottom end  (r=rows-1)
+    row_mid_x = (rf_rx0 + dx_ann + rf_lx1) / 2
+    row_mid_y = (rf_ry0 + dy_ann + cell + rf_ly1 + 2*dy_ann + cell) / 2
+    ann(row_mid_x + 4, row_mid_y + 10, f"rows={rows}", "start")
 
     lines.append('</svg>')
     Path(out_path).write_text('\n'.join(lines), encoding='utf-8')

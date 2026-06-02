@@ -122,12 +122,13 @@ def main():
     out_minx, out_maxx, out_miny, out_maxy = bbox(out_polys)
 
     PAD           = 30
+    KERN_LEFT     = 90   # extra left room for the kernel depth annotation text
     GAP_KN_INPUT  = 80   # horizontal gap between kernel right edge and input left edge
     GAP_OUTPUT    = 70   # horizontal gap between input right edge and output left edge
     LABEL_GAP     = 65
 
-    # Kernel: left edge at x=PAD
-    kn_ox = PAD - kn_minx
+    # Kernel: left edge at x=KERN_LEFT (enough room for the depth label)
+    kn_ox = KERN_LEFT - kn_minx
 
     # Input: placed to the right of the kernel
     in_ox = kn_ox + kn_maxx + GAP_KN_INPUT - in_minx
@@ -157,24 +158,25 @@ def main():
                          f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>')
 
     # ── Connecting line endpoints (computed once, reused for both draw passes) ───
-    # Kernel back corners: the two corners of the r=0 edge of the kernel top face
-    # (the face pointing toward the input, which is to the right).
-    # Corner 1: far/top vertex of kernel top-face rhombus (r=0, c=0)
-    kc1x, kc1y = iso(KN_D-1, 0, 0, CELL)
-    kc1 = (kc1x + kn_ox, kc1y + kn_oy)
+    # Line 1: kernel corner a → patch corner A  (far corners of both top faces)
+    kc_a = (iso(KN_D-1, 0,        0,        CELL)[0] + kn_ox,
+            iso(KN_D-1, 0,        0,        CELL)[1] + kn_oy)
+    pc_A = (iso(IN_D-1, PATCH_R,  PATCH_C,  CELL)[0] + in_ox,
+            iso(IN_D-1, PATCH_R,  PATCH_C,  CELL)[1] + in_oy)
 
-    # Corner 2: right vertex of top-face rhombus (r=0, c=KN_C-1, right extension)
-    kc2ox, kc2oy = iso(KN_D-1, 0, KN_C-1, CELL)
-    kc2 = (kc2ox + dx + kn_ox, kc2oy + dy + kn_oy)
+    # Line 2: kernel corner c → patch corner C  (near corners of both top faces)
+    kc_c = (iso(KN_D-1, KN_R-1,           KN_C-1,           CELL)[0] + kn_ox,
+            iso(KN_D-1, KN_R-1,           KN_C-1,           CELL)[1] + 2*dy + kn_oy)
+    pc_C = (iso(IN_D-1, PATCH_R+KN_R-1,   PATCH_C+KN_C-1,   CELL)[0] + in_ox,
+            iso(IN_D-1, PATCH_R+KN_R-1,   PATCH_C+KN_C-1,   CELL)[1] + 2*dy + in_oy)
 
-    # Corresponding patch corners on input top face (same r=PATCH_R, corresponding cols)
-    pc1x, pc1y = iso(IN_D-1, PATCH_R, PATCH_C, CELL)
-    pc1 = (pc1x + in_ox, pc1y + in_oy)
+    # Line 3: kernel c corner at d=0 (bottom of kernel) → same position at d=0 in input (hidden)
+    kc_cb = (iso(0, KN_R-1,           KN_C-1,           CELL)[0] + kn_ox,
+             iso(0, KN_R-1,           KN_C-1,           CELL)[1] + 2*dy + CELL + kn_oy)
+    pc_Cb = (iso(0, PATCH_R+KN_R-1,   PATCH_C+KN_C-1,   CELL)[0] + in_ox,
+             iso(0, PATCH_R+KN_R-1,   PATCH_C+KN_C-1,   CELL)[1] + 2*dy + CELL + in_oy)
 
-    pc2ox, pc2oy = iso(IN_D-1, PATCH_R, PATCH_C + KN_C - 1, CELL)
-    pc2 = (pc2ox + dx + in_ox, pc2oy + dy + in_oy)
-
-    conn_lines = [(kc1, pc1), (kc2, pc2)]
+    conn_lines = [(kc_a, pc_A), (kc_c, pc_C), (kc_cb, pc_Cb)]
 
     def draw_conn_lines(dashed=False):
         dash = ' stroke-dasharray="4,3"' if dashed else ''
@@ -224,6 +226,43 @@ def main():
     pox, poy = iso(IN_D-1, PATCH_R, PATCH_C, CELL)
     text(pox - dx - 6 + in_ox, poy + dy + in_oy - 20, "3×3 patch",
          anchor="end", size=11, weight="400", color="#8B6000", opacity=0.9)
+
+    # ── Temporary corner labels ───────────────────────────────────────────────
+    # Patch corners on input top face: A=far, B=right, C=near, D=left
+    # Kernel top-face corners:         a=far, b=right, c=near, d=left
+    def corner_dot(cx, cy, label, color, anchor="middle", dy_label=-8):
+        r = 4
+        lines.append(f'  <circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r}" '
+                     f'fill="{color}" stroke="white" stroke-width="1"/>')
+        lines.append(f'  <text x="{cx:.1f}" y="{cy+dy_label:.1f}" text-anchor="{anchor}" '
+                     f'font-family="system-ui,sans-serif" font-size="11" '
+                     f'font-weight="700" fill="{color}">{label}</text>')
+
+    d = IN_D - 1
+    # Patch: A=far, B=right, C=near, D=left
+    Ax, Ay = iso(d, PATCH_R,        PATCH_C,            CELL)
+    Bx, By = iso(d, PATCH_R,        PATCH_C+KN_C-1,     CELL); Bx += dx; By += dy
+    Cx, Cy = iso(d, PATCH_R+KN_R-1, PATCH_C+KN_C-1,     CELL); Cy += 2*dy
+    Dx, Dy = iso(d, PATCH_R+KN_R-1, PATCH_C,            CELL); Dx -= dx; Dy += dy
+
+    PATCH_DOT = "#8B6000"
+    corner_dot(Ax+in_ox, Ay+in_oy, "A", PATCH_DOT, dy_label=-10)
+    corner_dot(Bx+in_ox, By+in_oy, "B", PATCH_DOT, anchor="start", dy_label=-4)
+    corner_dot(Cx+in_ox, Cy+in_oy, "C", PATCH_DOT, dy_label=16)
+    corner_dot(Dx+in_ox, Dy+in_oy, "D", PATCH_DOT, anchor="end", dy_label=-4)
+
+    # Kernel top-face: a=far, b=right, c=near, d=left
+    kd = KN_D - 1
+    ax, ay = iso(kd, 0,        0,        CELL)
+    bx, by = iso(kd, 0,        KN_C-1,   CELL); bx += dx; by += dy
+    cx_, cy_ = iso(kd, KN_R-1, KN_C-1,   CELL); cy_ += 2*dy
+    ddx, ddy = iso(kd, KN_R-1, 0,        CELL); ddx -= dx; ddy += dy
+
+    KN_DOT = "#5A22CC"
+    corner_dot(ax+kn_ox, ay+kn_oy, "a", KN_DOT, dy_label=-10)
+    corner_dot(bx+kn_ox, by+kn_oy, "b", KN_DOT, anchor="start", dy_label=-4)
+    corner_dot(cx_+kn_ox, cy_+kn_oy, "c", KN_DOT, dy_label=16)
+    corner_dot(ddx+kn_ox, ddy+kn_oy, "d", KN_DOT, anchor="end", dy_label=-4)
 
     lines.append('</svg>')
 

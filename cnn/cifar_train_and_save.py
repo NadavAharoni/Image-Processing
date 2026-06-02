@@ -5,6 +5,7 @@
 # Run this first, then open cifar_inference_gui.py to classify images.
 # ─────────────────────────────────────────────────────────────────────────────
 
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -118,6 +119,11 @@ class CifarCNN(nn.Module):
         return self.head(x)
 
 
+if torch.cuda.is_available():
+    print(f"CUDA available — using GPU: {torch.cuda.get_device_name(0)}")
+else:
+    print("CUDA not available — training on CPU")
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = CifarCNN(
@@ -149,7 +155,10 @@ if USE_LR_SCHEDULER:
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, mode='max', factor=0.5, patience=5)
 
+t_train_start = time.time()
+
 for epoch in range(1, EPOCHS + 1):
+    t_epoch_start = time.time()
     # ── train ──
     model.train()
     train_loss = 0.0
@@ -177,15 +186,20 @@ for epoch in range(1, EPOCHS + 1):
 
     test_acc = correct / len(test_loader.dataset)
     current_lr = optimizer.param_groups[0]['lr']
+    epoch_secs = time.time() - t_epoch_start
     print(f"Epoch {epoch:02d}/{EPOCHS}  |  "
           f"train loss: {train_loss:.4f}  |  "
           f"test acc: {test_acc:.4f}  |  "
-          f"lr: {current_lr:.5f}")
+          f"lr: {current_lr:.5f}  |  "
+          f"{epoch_secs:.0f}s")
 
     if USE_LR_SCHEDULER:
         scheduler.step(test_acc)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
+
+total_secs = time.time() - t_train_start
+print(f"\nTraining complete in {total_secs // 60:.0f}m {total_secs % 60:.0f}s")
 
 torch.save({
     'model_state': model.state_dict(),

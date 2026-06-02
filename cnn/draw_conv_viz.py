@@ -1,35 +1,32 @@
 import math
+import sys
 from pathlib import Path
 
-CELL = 18          # smaller cell for the large input cube
-KERNEL_CELL = 28   # larger for the kernel (matches original)
+CELL = 18
 
 # Colors - input cube
-IN_TOP_FILL    = "#D4EAF7"
-IN_TOP_STROKE  = "#4A90C4"
-IN_RIGHT_FILL  = "#A8D1EE"
-IN_RIGHT_STROKE= "#4A90C4"
-IN_LEFT_FILL   = "#7CBDE5"
-IN_LEFT_STROKE = "#4A90C4"
+IN_TOP_FILL     = "#D4EAF7"; IN_TOP_STROKE     = "#4A90C4"
+IN_RIGHT_FILL   = "#A8D1EE"; IN_RIGHT_STROKE   = "#4A90C4"
+IN_LEFT_FILL    = "#7CBDE5"; IN_LEFT_STROKE    = "#4A90C4"
 
-# Colors - highlighted patch inside input
-HL_TOP_FILL    = "#FFD580"
-HL_TOP_STROKE  = "#B07D00"
-HL_RIGHT_FILL  = "#FFBC40"
-HL_RIGHT_STROKE= "#B07D00"
-HL_LEFT_FILL   = "#E8A200"
-HL_LEFT_STROKE = "#B07D00"
+# Colors - highlighted patch (input) and highlighted output pixel
+HL_TOP_FILL     = "#FFD580"; HL_TOP_STROKE     = "#B07D00"
+HL_RIGHT_FILL   = "#FFBC40"; HL_RIGHT_STROKE   = "#B07D00"
+HL_LEFT_FILL    = "#E8A200"; HL_LEFT_STROKE    = "#B07D00"
 
 # Colors - kernel
-KN_TOP_FILL    = "#EEEDFE"
-KN_TOP_STROKE  = "#7F77DD"
-KN_RIGHT_FILL  = "#C8C4F5"
-KN_RIGHT_STROKE= "#7F77DD"
-KN_LEFT_FILL   = "#A8A3EC"
-KN_LEFT_STROKE = "#7F77DD"
+KN_TOP_FILL     = "#EEEDFE"; KN_TOP_STROKE     = "#7F77DD"
+KN_RIGHT_FILL   = "#C8C4F5"; KN_RIGHT_STROKE   = "#7F77DD"
+KN_LEFT_FILL    = "#A8A3EC"; KN_LEFT_STROKE    = "#7F77DD"
 
-TEXT_COLOR     = "#1A3A5C"
-ARROW_COLOR    = "#888"
+# Colors - output feature map
+OUT_TOP_FILL    = "#E0F5E0"; OUT_TOP_STROKE    = "#5A9A5A"
+OUT_RIGHT_FILL  = "#C0E8C0"; OUT_RIGHT_STROKE  = "#5A9A5A"
+OUT_LEFT_FILL   = "#A0DBB0"; OUT_LEFT_STROKE   = "#5A9A5A"
+
+TEXT_COLOR  = "#1A3A5C"
+CONN_COLOR  = "#999999"
+
 
 def iso(d, r, c, cell):
     sx = (c - r) * cell * math.cos(math.radians(30))
@@ -55,10 +52,6 @@ def pts(corners):
     return " ".join(f"{x:.2f},{y:.2f}" for x, y in corners)
 
 def build_cube(depth, rows, cols, cell, highlight_patch=None):
-    """
-    Build list of (order, face_type, corners, is_highlight) for the cube.
-    highlight_patch = (r0, c0, h, w) - top-left corner and size of highlighted region
-    """
     polys = []
     for d in range(depth):
         for r in range(rows - 1, -1, -1):
@@ -69,7 +62,6 @@ def build_cube(depth, rows, cols, cell, highlight_patch=None):
                 show_left  = (r == rows - 1)
                 order = d * rows * cols + (rows - 1 - r) * cols + (cols - 1 - c)
 
-                # Check if this cell is in the highlight patch
                 is_hl = False
                 if highlight_patch:
                     r0, c0, ph, pw = highlight_patch
@@ -88,106 +80,114 @@ def bbox(polys):
     all_y = [y for _, _, corners, _ in polys for _, y in corners]
     return min(all_x), max(all_x), min(all_y), max(all_y)
 
-def face_colors(face_type, is_hl, is_input):
-    if is_input:
+def face_colors(face_type, is_hl, cube_type):
+    if cube_type == 'input':
         if is_hl:
-            fills = {'top': HL_TOP_FILL, 'right': HL_RIGHT_FILL, 'left': HL_LEFT_FILL}
-            strokes = {'top': HL_TOP_STROKE, 'right': HL_RIGHT_STROKE, 'left': HL_LEFT_STROKE}
+            fills   = {'top': HL_TOP_FILL,   'right': HL_RIGHT_FILL,   'left': HL_LEFT_FILL}
+            strokes = {'top': HL_TOP_STROKE,  'right': HL_RIGHT_STROKE, 'left': HL_LEFT_STROKE}
         else:
-            fills = {'top': IN_TOP_FILL, 'right': IN_RIGHT_FILL, 'left': IN_LEFT_FILL}
-            strokes = {'top': IN_TOP_STROKE, 'right': IN_RIGHT_STROKE, 'left': IN_LEFT_STROKE}
-    else:
-        fills = {'top': KN_TOP_FILL, 'right': KN_RIGHT_FILL, 'left': KN_LEFT_FILL}
-        strokes = {'top': KN_TOP_STROKE, 'right': KN_RIGHT_STROKE, 'left': KN_LEFT_STROKE}
+            fills   = {'top': IN_TOP_FILL,   'right': IN_RIGHT_FILL,   'left': IN_LEFT_FILL}
+            strokes = {'top': IN_TOP_STROKE,  'right': IN_RIGHT_STROKE, 'left': IN_LEFT_STROKE}
+    elif cube_type == 'kernel':
+        fills   = {'top': KN_TOP_FILL,   'right': KN_RIGHT_FILL,   'left': KN_LEFT_FILL}
+        strokes = {'top': KN_TOP_STROKE,  'right': KN_RIGHT_STROKE, 'left': KN_LEFT_STROKE}
+    elif cube_type == 'output':
+        if is_hl:
+            fills   = {'top': HL_TOP_FILL,   'right': HL_RIGHT_FILL,   'left': HL_LEFT_FILL}
+            strokes = {'top': HL_TOP_STROKE,  'right': HL_RIGHT_STROKE, 'left': HL_LEFT_STROKE}
+        else:
+            fills   = {'top': OUT_TOP_FILL,   'right': OUT_RIGHT_FILL,   'left': OUT_LEFT_FILL}
+            strokes = {'top': OUT_TOP_STROKE,  'right': OUT_RIGHT_STROKE, 'left': OUT_LEFT_STROKE}
     return fills[face_type], strokes[face_type]
 
 
 def main():
+    out_file = sys.argv[1] if len(sys.argv) > 1 else "conv_input_kernel.svg"
     lines = []
 
-    # ── Build input cube (8×14×14) ───────────────────────────────────────────────
-    IN_D, IN_R, IN_C = 8, 14, 14
-    # Highlight patch starting at (row=2, col=6), size 3×3
+    IN_D,  IN_R,  IN_C  = 8, 14, 14
+    KN_D,  KN_R,  KN_C  = 8,  3,  3
+    OUT_D, OUT_R, OUT_C  = 1, 14, 14
     PATCH_R, PATCH_C = 2, 6
 
-    in_polys = build_cube(IN_D, IN_R, IN_C, CELL, highlight_patch=(PATCH_R, PATCH_C, 3, 3))
+    dx = CELL * math.cos(math.radians(30))
+    dy = CELL * math.sin(math.radians(30))
 
-    # ── Build kernel cube (8×3×3) ────────────────────────────────────────────────
-    KN_D, KN_R, KN_C = 8, 3, 3
-    kn_polys = build_cube(KN_D, KN_R, KN_C, KERNEL_CELL)
+    in_polys  = build_cube(IN_D,  IN_R,  IN_C,  CELL, highlight_patch=(PATCH_R, PATCH_C, 3, 3))
+    kn_polys  = build_cube(KN_D,  KN_R,  KN_C,  CELL)
+    out_polys = build_cube(OUT_D, OUT_R, OUT_C, CELL, highlight_patch=(PATCH_R, PATCH_C, 1, 1))
 
-    # ── Compute bounding boxes ────────────────────────────────────────────────────
-    in_minx, in_maxx, in_miny, in_maxy = bbox(in_polys)
-    kn_minx, kn_maxx, kn_miny, kn_maxy = bbox(kn_polys)
+    in_minx,  in_maxx,  in_miny,  in_maxy  = bbox(in_polys)
+    kn_minx,  kn_maxx,  kn_miny,  kn_maxy  = bbox(kn_polys)
+    out_minx, out_maxx, out_miny, out_maxy = bbox(out_polys)
 
-    PAD = 30
-    LABEL_GAP = 60
-    GAP_BETWEEN = 80  # horizontal gap between the two cubes
+    PAD           = 30
+    GAP_KN_INPUT  = 80   # horizontal gap between kernel right edge and input left edge
+    GAP_OUTPUT    = 70   # horizontal gap between input right edge and output left edge
+    LABEL_GAP     = 65
 
-    in_w = in_maxx - in_minx
-    kn_w = kn_maxx - kn_minx
-    in_h = in_maxy - in_miny
-    kn_h = kn_maxy - kn_miny
+    # Kernel: left edge at x=PAD
+    kn_ox = PAD - kn_minx
 
-    # Left margin for depth label
-    LEFT_MARGIN = 80
-
-    # Input cube offset
-    in_ox = LEFT_MARGIN - in_minx
+    # Input: placed to the right of the kernel
+    in_ox = kn_ox + kn_maxx + GAP_KN_INPUT - in_minx
     in_oy = PAD - in_miny
 
-    # Kernel cube offset (placed to the right of input)
-    kn_ox = in_ox + in_w + GAP_BETWEEN - kn_minx
-    kn_oy = PAD + (in_h - kn_h) / 2 - kn_miny  # vertically center kernel to input
+    # Kernel: vertically centered to input
+    in_screen_cy = in_oy + (in_miny + in_maxy) / 2
+    kn_oy = in_screen_cy - (kn_miny + kn_maxy) / 2
 
-    total_w = kn_ox + kn_w + kn_minx + PAD + 40
-    total_h = max(in_h, kn_h) + PAD * 2 + LABEL_GAP
+    # Output cube: right of the input right edge
+    out_ox = in_ox + in_maxx + GAP_OUTPUT - out_minx
+    out_oy = in_screen_cy - (out_miny + out_maxy) / 2
+
+    total_w = out_ox + out_maxx + PAD + 20
+    total_h = max(in_oy + in_maxy, kn_oy + kn_maxy, out_oy + out_maxy) + LABEL_GAP + PAD
 
     lines.append(f'<svg width="{total_w:.0f}" height="{total_h:.0f}" '
                  f'viewBox="0 0 {total_w:.0f} {total_h:.0f}" '
                  f'xmlns="http://www.w3.org/2000/svg">')
-    lines.append('  <title>Convolution: input and kernel</title>')
+    lines.append('  <title>Convolution: input, kernel, and output</title>')
 
-    def draw_polys(polys, ox, oy, is_input, sw=0.8):
+    def draw_polys(polys, ox, oy, cube_type, sw=0.8):
         for _, face_type, corners, is_hl in sorted(polys, key=lambda x: x[0]):
             shifted = [(x + ox, y + oy) for x, y in corners]
-            fill, stroke = face_colors(face_type, is_hl, is_input)
+            fill, stroke = face_colors(face_type, is_hl, cube_type)
             lines.append(f'  <polygon points="{pts(shifted)}" '
                          f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>')
 
-    draw_polys(in_polys, in_ox, in_oy, is_input=True, sw=0.6)
-    draw_polys(kn_polys, kn_ox, kn_oy, is_input=False, sw=0.9)
+    # ── Connecting line endpoints (computed once, reused for both draw passes) ───
+    # Kernel back corners: the two corners of the r=0 edge of the kernel top face
+    # (the face pointing toward the input, which is to the right).
+    # Corner 1: far/top vertex of kernel top-face rhombus (r=0, c=0)
+    kc1x, kc1y = iso(KN_D-1, 0, 0, CELL)
+    kc1 = (kc1x + kn_ox, kc1y + kn_oy)
 
-    # ── Draw connection arrow between highlighted patch and kernel ────────────────
-    dx_ann = CELL * math.cos(math.radians(30))
-    dy_ann = CELL * math.sin(math.radians(30))
+    # Corner 2: right vertex of top-face rhombus (r=0, c=KN_C-1, right extension)
+    kc2ox, kc2oy = iso(KN_D-1, 0, KN_C-1, CELL)
+    kc2 = (kc2ox + dx + kn_ox, kc2oy + dy + kn_oy)
 
-    # Right edge of highlighted patch (top layer, col = PATCH_C+3-1 = right col, center row of patch)
-    patch_right_r = PATCH_R + 1  # middle row of patch
-    patch_right_c = PATCH_C + 3 - 1  # rightmost col
-    ox_pr, oy_pr = iso(IN_D - 1, patch_right_r, patch_right_c, CELL)
-    # Right corner of the top face
-    arr_start_x = ox_pr + dx_ann + in_ox
-    arr_start_y = oy_pr + dy_ann + in_oy
+    # Corresponding patch corners on input top face (same r=PATCH_R, corresponding cols)
+    pc1x, pc1y = iso(IN_D-1, PATCH_R, PATCH_C, CELL)
+    pc1 = (pc1x + in_ox, pc1y + in_oy)
 
-    # Left edge of kernel (top layer)
-    kn_left_r, kn_left_c = KN_R - 1, 0
-    ox_kl, oy_kl = iso(KN_D - 1, kn_left_r, kn_left_c, KERNEL_CELL)
-    arr_end_x = ox_kl - KERNEL_CELL * math.cos(math.radians(30)) + kn_ox
-    arr_end_y = oy_kl + KERNEL_CELL * math.sin(math.radians(30)) + kn_oy
+    pc2ox, pc2oy = iso(IN_D-1, PATCH_R, PATCH_C + KN_C - 1, CELL)
+    pc2 = (pc2ox + dx + in_ox, pc2oy + dy + in_oy)
 
-    # Draw a curved arrow
-    mid_x = (arr_start_x + arr_end_x) / 2
-    mid_y = min(arr_start_y, arr_end_y) - 18
+    conn_lines = [(kc1, pc1), (kc2, pc2)]
 
-    lines.append(f'  <defs>'
-                 f'<marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">'
-                 f'<polygon points="0 0, 8 3, 0 6" fill="{ARROW_COLOR}"/>'
-                 f'</marker></defs>')
-    lines.append(f'  <path d="M {arr_start_x:.1f},{arr_start_y:.1f} '
-                 f'Q {mid_x:.1f},{mid_y:.1f} {arr_end_x:.1f},{arr_end_y:.1f}" '
-                 f'fill="none" stroke="{ARROW_COLOR}" stroke-width="1.5" stroke-dasharray="5,3" '
-                 f'marker-end="url(#arrowhead)"/>')
+    def draw_conn_lines(dashed=False):
+        dash = ' stroke-dasharray="4,3"' if dashed else ''
+        for (x1, y1), (x2, y2) in conn_lines:
+            lines.append(f'  <line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                         f'stroke="{CONN_COLOR}" stroke-width="1.2"{dash}/>')
+
+    # ── Painter's algorithm ───────────────────────────────────────────────────────
+    draw_conn_lines(dashed=False)   # 1. solid lines (behind everything)
+    draw_polys(in_polys, in_ox, in_oy, 'input', sw=0.6)   # 2. input cube
+    draw_polys(kn_polys, kn_ox, kn_oy, 'kernel', sw=0.9)  # 3. kernel
+    draw_conn_lines(dashed=True)    # 4. dashed lines (hidden-edge convention)
+    draw_polys(out_polys, out_ox, out_oy, 'output', sw=0.6)  # 5. output slab
 
     # ── Labels ────────────────────────────────────────────────────────────────────
     def text(x, y, s, anchor="middle", size=13, weight="600", color=TEXT_COLOR, opacity=1.0):
@@ -195,39 +195,39 @@ def main():
                      f'font-family="system-ui,sans-serif" font-size="{size}" '
                      f'font-weight="{weight}" fill="{color}" opacity="{opacity}">{s}</text>')
 
-    # Input cube label
     in_cx = in_ox + (in_minx + in_maxx) / 2
-    text(in_cx, PAD + in_h + in_oy - in_miny + 22, "Input feature map", size=14)
-    text(in_cx, PAD + in_h + in_oy - in_miny + 40, "8 × 14 × 14", size=12, weight="400", opacity=0.75)
+    in_label_y = in_oy + in_maxy + 22
+    text(in_cx, in_label_y,      "Input feature map", size=14)
+    text(in_cx, in_label_y + 18, "8 × 14 × 14", size=12, weight="400", opacity=0.75)
 
-    # Kernel label
     kn_cx = kn_ox + (kn_minx + kn_maxx) / 2
-    text(kn_cx, PAD + kn_h + kn_oy - kn_miny + 22, "Kernel (filter)", size=14)
-    text(kn_cx, PAD + kn_h + kn_oy - kn_miny + 40, "8 × 3 × 3", size=12, weight="400", opacity=0.75)
+    kn_label_y = kn_oy + kn_maxy + 22
+    text(kn_cx, kn_label_y,      "Kernel", size=14)
+    text(kn_cx, kn_label_y + 18, "8 × 3 × 3", size=12, weight="400", opacity=0.75)
 
-    # Depth annotations (left side of each cube)
-    def depth_ann(r, cell, ox, oy, label, depth):
+    out_cx = out_ox + (out_minx + out_maxx) / 2
+    out_label_y = out_oy + out_maxy + 22
+    text(out_cx, out_label_y,      "Output channel", size=14)
+    text(out_cx, out_label_y + 18, "14 × 14", size=12, weight="400", opacity=0.75)
+
+    # Depth annotations (left side of input and kernel)
+    def depth_ann(rows, depth, cell, ox, oy, label):
         d_mid = depth / 2
-        lx, ly = iso(d_mid, r, 0, cell)
-        dx = cell * math.cos(math.radians(30))
-        dy = cell * math.sin(math.radians(30))
-        text(lx - dx - 8 + ox, ly + dy + cell/2 + oy, label, anchor="end", size=11, weight="400", opacity=0.75)
+        lx, ly = iso(d_mid, rows-1, 0, cell)
+        text(lx - dx - 8 + ox, ly + dy + cell/2 + oy, label,
+             anchor="end", size=11, weight="400", opacity=0.75)
 
-    depth_ann(IN_R-1, CELL, in_ox, in_oy, f"depth={IN_D}", IN_D)
-    depth_ann(KN_R-1, KERNEL_CELL, kn_ox, kn_oy, f"depth={KN_D}", KN_D)
+    depth_ann(IN_R, IN_D, CELL, in_ox, in_oy, f"depth={IN_D}")
+    depth_ann(KN_R, KN_D, CELL, kn_ox, kn_oy, f"depth={KN_D}")
 
     # Patch annotation
-    patch_top_r, patch_top_c = PATCH_R, PATCH_C
-    ox_pt, oy_pt = iso(IN_D - 1, patch_top_r, patch_top_c, CELL)
-    # top-left of highlighted patch on top layer
-    hl_label_x = ox_pt - CELL * math.cos(math.radians(30)) + in_ox
-    hl_label_y = oy_pt + CELL * math.sin(math.radians(30)) + in_oy - 14
-    text(hl_label_x - 6, hl_label_y - 6, "3×3 patch", anchor="end", size=11,
-         weight="400", color="#8B6000", opacity=0.9)
+    pox, poy = iso(IN_D-1, PATCH_R, PATCH_C, CELL)
+    text(pox - dx - 6 + in_ox, poy + dy + in_oy - 20, "3×3 patch",
+         anchor="end", size=11, weight="400", color="#8B6000", opacity=0.9)
 
     lines.append('</svg>')
 
-    out = Path(__file__).parent / "conv_input_kernel.svg"
+    out = Path(__file__).parent / out_file
     out.write_text('\n'.join(lines), encoding='utf-8')
     print(f"Written: {out}")
 

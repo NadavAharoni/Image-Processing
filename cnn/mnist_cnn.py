@@ -5,11 +5,21 @@
 # Everything else (data loading, training loop, evaluation) stays the same.
 # ─────────────────────────────────────────────────────────────────────────────
 
+import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+
+# ── Argument parsing ──────────────────────────────────────────────────────────
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--augment", action="store_true",
+                    help="Apply data augmentation to training set")
+args = parser.parse_args()
+
+SAVE_PATH = "mnist_cnn_augmented.pth" if args.augment else "mnist_cnn.pth"
 
 # ── HYPERPARAMETERS ───────────────────────────────────────────────────────────
 
@@ -21,20 +31,26 @@ LEARNING_RATE = 0.001
 BATCH_SIZE    = 64
 EPOCHS        = 5
 
-SAVE_PATH     = "mnist_cnn.pth"   # where the trained weights are saved
-
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 
-transform = transforms.Compose([
-    transforms.ToTensor(),               # pixel values → [0, 1]
-    transforms.Normalize((0.1307,), (0.3081,))  # MNIST mean and std
+base_train_transforms = [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
+if args.augment:
+    base_train_transforms = [
+        transforms.RandomRotation(degrees=10),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+    ] + base_train_transforms
+train_transform = transforms.Compose(base_train_transforms)
+
+test_transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
-train_data = datasets.MNIST(root='./data', train=True,  download=True, transform=transform)
-test_data  = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+train_data = datasets.MNIST(root='./data', train=True,  download=True, transform=train_transform)
+test_data  = datasets.MNIST(root='./data', train=False, download=True, transform=test_transform)
 
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 test_loader  = DataLoader(test_data,  batch_size=BATCH_SIZE, shuffle=False)
@@ -102,6 +118,8 @@ print(f"Conv filters: {CONV1_FILTERS} → {CONV2_FILTERS}  |  FC hidden: {FC_HID
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+print(f"Augmentation: {'ON' if args.augment else 'OFF'} — saving to {SAVE_PATH}")
 
 for epoch in range(1, EPOCHS + 1):
     # ── train ──

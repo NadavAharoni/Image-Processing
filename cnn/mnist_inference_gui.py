@@ -54,12 +54,6 @@ class MnistCNN(nn.Module):
 
 # ── Load model ────────────────────────────────────────────────────────────────
 
-checkpoint = torch.load(SAVE_PATH, map_location='cpu')
-config     = checkpoint['config']
-model      = MnistCNN(**config)
-model.load_state_dict(checkpoint['model_state'])
-model.eval()
-
 # Same normalisation used during training
 preprocess = transforms.Compose([
     transforms.Grayscale(),
@@ -67,6 +61,21 @@ preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize((0.1307,), (0.3081,))
 ])
+
+model = None
+current_model_path = None
+
+
+def load_model(path):
+    global model, current_model_path
+    checkpoint = torch.load(path, map_location='cpu')
+    config = checkpoint['config']
+    m = MnistCNN(**config)
+    m.load_state_dict(checkpoint['model_state'])
+    m.eval()
+    model = m
+    current_model_path = path
+    return model
 
 
 def predict(pil_image):
@@ -154,6 +163,15 @@ class App(tk.Tk):
         # ── Right: prediction panel ──
         right = tk.Frame(self, bg="#1e1e1e", padx=16, pady=16)
         right.grid(row=0, column=1, sticky="n", padx=(16, 0))
+
+        tk.Button(right, text="Load model", font=label_font,
+                  bg="#444444", fg="#cccccc", activebackground="#555",
+                  relief="flat", padx=12, pady=6,
+                  command=self._load_model_dialog).pack(anchor="w", pady=(0, 4))
+
+        self._status_label = tk.Label(right, text="No model loaded", font=bar_font,
+                                      bg="#1e1e1e", fg="#888888")
+        self._status_label.pack(anchor="w", pady=(0, 8))
 
         tk.Label(right, text="Prediction", font=title_font,
                  bg="#1e1e1e", fg="#cccccc").pack(anchor="w")
@@ -282,6 +300,9 @@ class App(tk.Tk):
     # ── Inference ────────────────────────────────────────────────────────────
 
     def _run_predict(self):
+        if model is None:
+            self._status_label.config(text="No model loaded")
+            return
         # Don't bother predicting on an empty canvas
         if self.pil_image.getextrema()[1] == 0:
             return
@@ -364,7 +385,21 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("Save Error", f"Failed to save results JSON:\n{e}")
 
-    # ── Load ─────────────────────────────────────────────────────────────────
+    # ── Load model ───────────────────────────────────────────────────────────
+
+    def _load_model_dialog(self):
+        filepath = filedialog.askopenfilename(
+            title="Select model file",
+            filetypes=[("PyTorch model", "*.pth")],
+            initialdir=str(Path(__file__).parent),
+        )
+        if not filepath:
+            return
+        load_model(filepath)
+        self._status_label.config(text=f"Model: {Path(filepath).name}")
+        self._on_clear()
+
+    # ── Load image ────────────────────────────────────────────────────────────
 
     def _load_image(self):
         load_dir = self._default_save_dir()

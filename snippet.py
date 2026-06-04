@@ -1,3 +1,17 @@
+base_train_transforms = [
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
+    ]
+
+if args.augment:
+    base_train_transforms = [
+        transforms.RandomRotation(degrees=10),
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+    ] + base_train_transforms
+
+train_transform = transforms.Compose(base_train_transforms)
+
+
 # Block 2: conv → ReLU → maxpool
 # Input:  conv1_filters × 14 × 14
 # Output: conv2_filters × 7 × 7

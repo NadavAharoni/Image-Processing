@@ -27,6 +27,21 @@ self.block2 = nn.Sequential(
 
 
 
+# Block 1: conv → ReLU → maxpool
+# Input:  1 × 28 × 28
+# Output: conv1_filters × 14 × 14
+self.block1 = nn.Sequential(
+    nn.Conv2d(in_channels=1,
+              out_channels=conv1_filters,
+              kernel_size=3, padding=1),
+              # ^ same padding keeps 28×28
+    nn.ReLU(),
+    nn.MaxPool2d(kernel_size=2, stride=2)
+    # ^ halves spatial dims → 14×14
+)
+
+
+
 import cv2
 
 filename = "image.jpg"

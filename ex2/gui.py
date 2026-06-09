@@ -134,9 +134,7 @@ class ImageApp:
         # For now we simply copy the original image.
         # --------------------------------------------------------
 
-        warp.warp_image(self.original_image, angle, sx, sy)
-    
-        transformed = self.original_image.copy()
+        transformed = warp.warp_image(self.original_image, angle, sx, sy)
 
         self.current_image = transformed
         self.show_on_canvas(self.current_image)

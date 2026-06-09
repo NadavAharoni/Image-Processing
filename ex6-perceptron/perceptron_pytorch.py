@@ -92,6 +92,9 @@ def main():
         y_pred = predict(X, layer)         # shape: (n_samples, 1)
 
         # y needs to match y_pred's shape for BCELoss
+        # y_pred.squeeze()  →  shape (m, 1)  becomes  (m,)
+        # loss_fn (which is nn.BCELoss) computes the loss per sample,
+        # then averages them automatically.
         loss = loss_fn(y_pred.squeeze(), y)
 
         # --- Backward pass: compute gradients ---

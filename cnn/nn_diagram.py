@@ -2,45 +2,21 @@
 # nn_diagram.py
 #
 # Define a neural network as a list of layers, run the script, get an SVG.
-# Usage:  python nn_diagram.py             → writes diagram.svg
-#         python nn_diagram.py out.svg     → writes out.svg
+# The layer list itself lives in a per-model config module (see mnist_network.py,
+# cifar_network.py) with: NETWORK, EDGES, NODES_PER_ROW.
+#
+# Usage:  python nn_diagram.py <model>             → writes diagram.svg
+#         python nn_diagram.py <model> out.svg     → writes out.svg
+#         <model> is the name of a *_network.py module, e.g. "mnist" or "cifar"
 # ─────────────────────────────────────────────────────────────────────────────
 
 import sys
 import math
+import importlib
 from pathlib import Path
-
-# ── NETWORK DEFINITION ────────────────────────────────────────────────────────
-# Each layer is a dict with:
-#   id       : unique string (used for edge references)
-#   label    : bold text shown in the box
-#   sublabel : smaller text shown below label (use "" for none)
-#   type     : one of the keys in COLORS below
-
-NETWORK = [
-    {"id": "input",   "label": "Input",    "sublabel": "3×32×32",          "output": "",              "type": "input"},
-    {"id": "conv1a",  "label": "Conv 1a",  "sublabel": "32 filters, 3×3, ReLU",  "output": "→ 32×32×32",   "type": "conv"},
-    {"id": "conv1b",  "label": "Conv 1b",  "sublabel": "32 filters, 3×3, ReLU",  "output": "→ 32×32×32",   "type": "conv"},
-    {"id": "pool1",   "label": "MaxPool",  "sublabel": "",                        "output": "→ 32×16×16",   "type": "pool"},
-    {"id": "conv2a",  "label": "Conv 2a",  "sublabel": "64 filters, 3×3, ReLU",  "output": "→ 64×16×16",   "type": "conv"},
-    {"id": "conv2b",  "label": "Conv 2b",  "sublabel": "64 filters, 3×3, ReLU",  "output": "→ 64×16×16",   "type": "conv"},
-    {"id": "pool2",   "label": "MaxPool",  "sublabel": "",                        "output": "→ 64×8×8",     "type": "pool"},
-    {"id": "conv3a",  "label": "Conv 3a",  "sublabel": "128 filters, 3×3, ReLU", "output": "→ 128×8×8",    "type": "conv"},
-    {"id": "conv3b",  "label": "Conv 3b",  "sublabel": "128 filters, 3×3, ReLU", "output": "→ 128×8×8",    "type": "conv"},
-    {"id": "pool3",   "label": "MaxPool",  "sublabel": "",                  "output": "→ 128×4×4",    "type": "pool"},
-    {"id": "flatten", "label": "Flatten",  "sublabel": "",                  "output": "2048 units",    "type": "flatten"},
-    {"id": "fc1",     "label": "FC layer", "sublabel": "2048 → 256",        "output": "ReLU → 256",    "type": "fc"},
-    {"id": "fc2",     "label": "FC layer", "sublabel": "256 → 10",          "output": "",              "type": "fc"},
-    {"id": "softmax", "label": "Softmax",  "sublabel": "10 classes",        "output": "",              "type": "output"},
-]
-
-# Edges: list of (from_id, to_id). Sequential by default — override here.
-# Leave as None to auto-generate a simple chain from the NETWORK list order.
-EDGES = None
 
 # ── LAYOUT ────────────────────────────────────────────────────────────────────
 
-NODES_PER_ROW = 4      # how many nodes before wrapping to next row
 BOX_W         = 130    # box width  (px)
 BOX_H         = 76     # box height (px) — fits title + sublabel + output
 GAP_X         = 24     # horizontal gap between boxes
@@ -278,10 +254,20 @@ def render_svg(network, edges, nodes_per_row, box_w, box_h, gap_x, gap_row):
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("diagram.svg")
+    if len(sys.argv) < 2:
+        sys.exit("Usage: python nn_diagram.py <model> [out.svg]   (model = mnist, cifar, ...)")
 
-    edges = EDGES if EDGES is not None else auto_edges(NETWORK)
-    svg   = render_svg(NETWORK, edges, NODES_PER_ROW, BOX_W, BOX_H, GAP_X, GAP_ROW)
+    model_name = sys.argv[1]
+    sys.path.insert(0, str(Path(__file__).parent))
+    try:
+        model = importlib.import_module(f"{model_name}_network")
+    except ModuleNotFoundError:
+        sys.exit(f"No such model config: {model_name}_network.py")
+
+    out_path = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(f"{model_name}_diagram.svg")
+
+    edges = model.EDGES if model.EDGES is not None else auto_edges(model.NETWORK)
+    svg   = render_svg(model.NETWORK, edges, model.NODES_PER_ROW, BOX_W, BOX_H, GAP_X, GAP_ROW)
 
     out_path.write_text(svg, encoding="utf-8")
-    print(f"SVG written to {out_path}  ({len(NETWORK)} nodes, {len(edges)} edges)")
+    print(f"SVG written to {out_path}  ({len(model.NETWORK)} nodes, {len(edges)} edges)")
